@@ -30,6 +30,7 @@ values."
      git
      markdown
      org
+     x-org
      ess
      (latex :variables
             latex-enable-auto-fill t
@@ -214,7 +215,7 @@ values."
    ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters the
    ;; point when it reaches the top or bottom of the screen. (default t)
-   dotspacemacs-smooth-scrolling t
+   dotspacemacs-smooth-scrolling nil
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
@@ -250,6 +251,7 @@ values."
 It is called immediately after `dotspacemacs/init'.  You are free to put almost
 any user code here.  The exception is org related code, which should be placed
 in `dotspacemacs/user-config'."
+  (add-to-list 'load-path "~/.emacs.d/private/misc")
   (menu-bar-mode 1)
   (delete-selection-mode 1)
   (setq exec-path-from-shell-check-startup-files nil)
@@ -401,7 +403,7 @@ layers configuration. You are free to put any user code."
   (setq TeX-view-program-list
         '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")))
 
-  )
+  
 
 (with-eval-after-load 'yasnippet
   (setq yas-snippet-dirs (remq 'yas-installed-snippets-dir yas-snippet-dirs)))
@@ -414,5 +416,48 @@ layers configuration. You are free to put any user code."
    )
 
 
+(setq org-capture-templates
+      (quote
+       (("w"
+         "Default template"
+         entry
+         (file+headline "~/org/capture.org" "Notes")
+         "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+         :empty-lines 1)
+        ;; ... more templates here ...
+        )))
+
+(require 'org-protocol-capture-html)
+
+
+;; somewhere after (require 'ess-site)
+(setq ess-swv-processor 'knitr)
+
+(setq ess-swv-plug-into-AUCTeX-p t)
+
+(defun ess-swv-add-TeX-commands ()
+  "Add commands to AUCTeX's \\[TeX-command-list]."
+  (unless (and (featurep 'tex-site) (featurep 'tex))
+    (error "AUCTeX does not seem to be loaded"))
+  (add-to-list 'TeX-command-list
+               '("Knit" "Rscript -e \"library(knitr); knit('%t')\""
+                 TeX-run-command nil (latex-mode) :help
+                 "Run Knitr") t)
+  (add-to-list 'TeX-command-list
+               '("LaTeXKnit" "%l %(mode) %s"
+                 TeX-run-TeX nil (latex-mode) :help
+                 "Run LaTeX after Knit") t)
+  (setq TeX-command-default "Knit")
+  (mapc (lambda (suffix)
+          (add-to-list 'TeX-file-extensions suffix))
+        '("nw" "Snw" "Rnw")))
+
+(defun ess-swv-remove-TeX-commands (x)
+  "Helper function: check if car of X is one of the Knitr strings"
+  (let ((swv-cmds '("Knit" "LaTeXKnit")))
+    (unless (member (car x) swv-cmds) x)))
+
+
+)
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
