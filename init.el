@@ -248,9 +248,9 @@ values."
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
-It is called immediately after `dotspacemacs/init'.  You are free to put almost
-any user code here.  The exception is org related code, which should be placed
-in `dotspacemacs/user-config'."
+It is called immediately after `dotspacemacs/init'. You are free
+to put almost any user code here. The exception is org related
+code, which should be placed in `dotspacemacs/user-config'."
   (add-to-list 'load-path "~/.emacs.d/private/misc")
   (menu-bar-mode 1)
   (delete-selection-mode 1)
@@ -277,7 +277,6 @@ layers configuration. You are free to put any user code."
 
   (global-set-key [(C-s-up)] 'windmove-up)
   (global-set-key [(C-s-down)] 'windmove-down)
-
 
   (global-set-key [f1] 'replace-string)
   (global-set-key [f2] 'split-window-horizontally)
@@ -330,16 +329,15 @@ layers configuration. You are free to put any user code."
       (save-excursion
         (goto-char (point-min))
         (while (search-forward "-+-" nil t) (replace-match "-|-"))
-        ))
-    (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
+        )))
 
-
+  (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
 
   (add-hook 'markdown-mode-hook 'orgtbl-mode)
   (add-hook 'markdown-mode-hook
             (lambda()
               (add-hook 'after-save-hook 'cleanup-org-tables  nil 'make-it-local)))
-  )
+
 
   (setq inferior-julia-program-name "/usr/local/bin/julia")
   (setq org-support-shift-select t)
@@ -350,7 +348,7 @@ layers configuration. You are free to put any user code."
    '((R . t)
      (python . t)
      (julia . t)))
-
+  
   ;; F5 methods
 
   (defun org-export-as-pdf ()
@@ -383,6 +381,12 @@ layers configuration. You are free to put any user code."
     (TeX-command "View" 'TeX-master-file)
     )
 
+  (add-hook 'ess-julia-mode-hook
+            (lambda()
+                  (define-key
+                    ess-julia-mode-map (kbd "TAB") 'julia-latexsub-or-indent)
+                  ))
+
   (add-hook 'LaTeX-mode-hook
             (lambda ()
               (define-key
@@ -397,18 +401,18 @@ layers configuration. You are free to put any user code."
                '("latexmk" "latexmk -pdf %s" TeX-run-TeX nil t
                  :help "Run latexmk on file")
                TeX-command-list)))
+
   (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
 
   (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
   (setq TeX-view-program-list
         '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")))
 
-  
 
-(with-eval-after-load 'yasnippet
-  (setq yas-snippet-dirs (remq 'yas-installed-snippets-dir yas-snippet-dirs)))
+  (with-eval-after-load 'yasnippet
+    (setq yas-snippet-dirs (remq 'yas-installed-snippets-dir yas-snippet-dirs)))
 
-(setq-default
+  (setq-default
    ;; Break lines at specified column (<= 80, defaults 72)
    fill-column 72
    ;; Turns on auto-fill-mode to automatically break lines
@@ -416,48 +420,48 @@ layers configuration. You are free to put any user code."
    )
 
 
-(setq org-capture-templates
-      (quote
-       (("w"
-         "Default template"
-         entry
-         (file+headline "~/org/capture.org" "Notes")
-         "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
-         :empty-lines 1)
-        ;; ... more templates here ...
-        )))
+  (setq org-capture-templates
+        (quote
+         (("w"
+           "Default template"
+           entry
+           (file+headline "~/org/capture.org" "Notes")
+           "* %^{Title}\n\n  Source: %u, %c\n\n  %i"
+           :empty-lines 1)
+          ;; ... more templates here ...
+          )))
 
-(require 'org-protocol-capture-html)
-
-
-;; somewhere after (require 'ess-site)
-(setq ess-swv-processor 'knitr)
-
-(setq ess-swv-plug-into-AUCTeX-p t)
-
-(defun ess-swv-add-TeX-commands ()
-  "Add commands to AUCTeX's \\[TeX-command-list]."
-  (unless (and (featurep 'tex-site) (featurep 'tex))
-    (error "AUCTeX does not seem to be loaded"))
-  (add-to-list 'TeX-command-list
-               '("Knit" "Rscript -e \"library(knitr); knit('%t')\""
-                 TeX-run-command nil (latex-mode) :help
-                 "Run Knitr") t)
-  (add-to-list 'TeX-command-list
-               '("LaTeXKnit" "%l %(mode) %s"
-                 TeX-run-TeX nil (latex-mode) :help
-                 "Run LaTeX after Knit") t)
-  (setq TeX-command-default "Knit")
-  (mapc (lambda (suffix)
-          (add-to-list 'TeX-file-extensions suffix))
-        '("nw" "Snw" "Rnw")))
-
-(defun ess-swv-remove-TeX-commands (x)
-  "Helper function: check if car of X is one of the Knitr strings"
-  (let ((swv-cmds '("Knit" "LaTeXKnit")))
-    (unless (member (car x) swv-cmds) x)))
+  (require 'org-protocol-capture-html)
 
 
+  ;; somewhere after (require 'ess-site)
+  (setq ess-swv-processor 'knitr)
+
+  (setq ess-swv-plug-into-AUCTeX-p t)
+
+  (defun ess-swv-add-TeX-commands ()
+    "Add commands to AUCTeX's \\[TeX-command-list]."
+    (unless (and (featurep 'tex-site) (featurep 'tex))
+      (error "AUCTeX does not seem to be loaded"))
+    (add-to-list 'TeX-command-list
+                 '("Knit" "Rscript -e \"library(knitr); knit('%t')\""
+                   TeX-run-command nil (latex-mode) :help
+                   "Run Knitr") t)
+    (add-to-list 'TeX-command-list
+                 '("LaTeXKnit" "%l %(mode) %s"
+                   TeX-run-TeX nil (latex-mode) :help
+                   "Run LaTeX after Knit") t)
+    (setq TeX-command-default "Knit")
+    (mapc (lambda (suffix)
+            (add-to-list 'TeX-file-extensions suffix))
+          '("nw" "Snw" "Rnw")))
+
+  (defun ess-swv-remove-TeX-commands (x)
+    "Helper function: check if car of X is one of the Knitr strings"
+    (let ((swv-cmds '("Knit" "LaTeXKnit")))
+      (unless (member (car x) swv-cmds) x)))
 )
+
+
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
