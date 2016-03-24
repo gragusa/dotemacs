@@ -261,6 +261,7 @@ in `dotspacemacs/user-config'."
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
+  (spacemacs|disable-company poly-markdown+R-mode)
   (global-set-key [home] 'beginning-of-line)
   (global-set-key [end] 'end-of-line)
   (global-set-key [(s-right)] 'end-of-line)
@@ -361,6 +362,17 @@ layers configuration. You are free to put any user code."
    (lambda()
      (define-key org-mode-map
        (kbd "<f5>") 'org-export-as-pdf)))
+
+  (setq org-src-preserve-indentation t)
+  (setq org-latex-listings 'minted)
+  (setq org-latex-minted-options
+        '(("fontsize" "\\small")("obeytabs" "true")("bgcolor" "lightgray")))
+  (add-to-list 'org-latex-packages-alist '("" "minted" nil))
+  (add-to-list 'org-latex-packages-alist '("dvipsnames" "xcolor" nil))
+  ;; (add-to-list 'org-latex-packages-alist '("" "mathpazo" t))
+
+  (setq org-latex-pdf-process '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                                "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
   (add-hook
    'org-beamer-mode-hook
