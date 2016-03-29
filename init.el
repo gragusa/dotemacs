@@ -366,9 +366,16 @@ layers configuration. You are free to put any user code."
   (setq org-src-preserve-indentation t)
   (setq org-latex-listings 'minted)
   (setq org-latex-minted-options
-        '(("fontsize" "\\small")("obeytabs" "true")("bgcolor" "lightgray")))
+        '(("fontsize" "\\small")
+          ("obeytabs" "true")
+          ("bgcolor" "lightgray")
+          ("frame" "single")
+          ("linenos" "true")
+          ("mathescape" "true")
+          ))
+
+  (add-to-list 'org-latex-packages-alist '("dvipsnames, x11names" "xcolor" nil))
   (add-to-list 'org-latex-packages-alist '("" "minted" nil))
-  (add-to-list 'org-latex-packages-alist '("dvipsnames" "xcolor" nil))
   ;; (add-to-list 'org-latex-packages-alist '("" "mathpazo" t))
 
   (setq org-latex-pdf-process '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
