@@ -479,6 +479,21 @@ layers configuration. You are free to put any user code."
     "Helper function: check if car of X is one of the Knitr strings"
     (let ((swv-cmds '("Knit" "LaTeXKnit")))
       (unless (member (car x) swv-cmds) x)))
+
+  ;;; remove automatic matching of backtics
+  (sp-local-pair "`" nil :actions nil)
+  ;;; 
+  (if (< emacs-major-version 25)
+	(defun alist-get (key alist &optional default remove)
+  "Get the value associated to KEY in ALIST.
+DEFAULT is the value to return if KEY is not found in ALIST.
+REMOVE, if non-nil, means that when setting this element, we should
+remove the entry if the new value is `eql' to DEFAULT."
+  (ignore remove) ;;Silence byte-compiler.
+  (let ((x (assq key alist)))
+    (if x (cdr x) default)))
+)
+
 )
 
 
