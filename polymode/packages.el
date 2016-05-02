@@ -12,7 +12,8 @@
 
 (defun polymode/init-polymode ()
   (use-package polymode
-    :mode (("\\.[rR]md"   . Rmd-mode))
+    :mode (("\\.[rR]md" . Rmd-mode))
+    :mode (("\\.[jJ]md" . poly-markdown-mode))
     :init
     (progn
       (defun Rmd-mode ()
@@ -23,6 +24,8 @@
         (R-mode)
         (poly-markdown+r-mode))
       ))
+    (with-eval-after-load 'polymode
+	(define-polymode poly-markdown+julia-mode pm-poly/markdown :lighter " PM-jmd"))
   )
 
 ;;; packages.el ends here
