@@ -23,7 +23,7 @@ values."
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
-     
+
      ;; better-defaults
      emacs-lisp
      osx
@@ -81,7 +81,7 @@ values."
    dotspacemacs-elpa-timeout 5
    ;; If non nil then spacemacs will check for updates at startup
    ;; when the current branch is not `develop'. (default t)
-   dotspacemacs-check-for-update nil
+   dotspacemacs-check-for-update t
    ;; One of `vim', `emacs' or `hybrid'. Evil is always enabled but if the
    ;; variable is `emacs' then the `holy-mode' is enabled at startup. `hybrid'
    ;; uses emacs key bindings for vim's insert mode, but otherwise leaves evil
@@ -119,11 +119,11 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   dotspacemacs-default-font '("Source Code Pro"
-                               :size 13
-                               :weight normal
-                               :width normal
-                               :powerline-scale 1.1)
+   ;; dotspacemacs-default-font '("Source Code Pro"
+   ;;                             :size 13
+   ;;                             :weight normal
+   ;;                             :width normal
+   ;;                             :powerline-scale 1.1)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The leader key accessible in `emacs state' and `insert state'
@@ -168,7 +168,7 @@ values."
    ;; If non nil then `ido' replaces `helm' for some commands. For now only
    ;; `find-files' (SPC f f), `find-spacemacs-file' (SPC f e s), and
    ;; `find-contrib-file' (SPC f e c) are replaced. (default nil)
-   dotspacemacs-use-ido nil
+   dotspacemacs-use-ido 2
    ;; If non nil, `helm' will try to minimize the space it uses. (default nil)
    dotspacemacs-helm-resize nil
    ;; if non nil, the helm header is hidden when there is only one source.
@@ -330,38 +330,36 @@ layers configuration. You are free to put any user code."
       (save-excursion
         (goto-char (point-min))
         (while (search-forward "-+-" nil t) (replace-match "-|-"))
-        )))
+        ))
 
-  (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
+    (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
 
-  (add-hook 'markdown-mode-hook 'orgtbl-mode)
-  (add-hook 'markdown-mode-hook
-            (lambda()
-              (add-hook 'after-save-hook 'cleanup-org-tables  nil 'make-it-local)))
-
-
-  (setq inferior-julia-program-name "/usr/local/bin/julia")
-  (setq org-support-shift-select t)
+    (add-hook 'markdown-mode-hook 'orgtbl-mode)
+    (add-hook 'markdown-mode-hook
+              (lambda()
+                (add-hook 'after-save-hook 'cleanup-org-tables  nil 'make-it-local)))
 
 
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((R . t)
-     (python . t)
-     (julia . t)))
-  
-  ;; F5 methods
+    (setq inferior-julia-program-name "/usr/local/bin/julia")
+    (setq org-support-shift-select t)
 
-  (defun org-export-as-pdf ()
-    (interactive)
-    (save-buffer)
-    (org-latex-export-to-pdf))
 
-  (add-hook
-   'org-mode-hook
-   (lambda()
-     (define-key org-mode-map
-       (kbd "<f5>") 'org-export-as-pdf)))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((R . t)
+       (python . t)
+       (julia . t)))
+
+    (defun org-export-as-pdf ()
+      (interactive)
+      (save-buffer)
+      (org-latex-export-to-pdf))
+
+    (add-hook
+     'org-mode-hook
+     (lambda()
+       (define-key org-mode-map
+         (kbd "<f5>") 'org-export-as-pdf)))
 
   (setq org-src-preserve-indentation t)
   (setq org-latex-listings 'minted)
@@ -386,6 +384,15 @@ layers configuration. You are free to put any user code."
    (lambda()
      (define-key org-mode-map
        (kbd "<f5>") 'org-beamer-export-as-pdf)))
+
+  (setq org-confirm-babel-evaluate nil)
+
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)
+  (add-hook 'org-mode-hook 'org-display-inline-images)
+
+  )
+
+
 
   (defun rl-save-and-LaTeX ()
     "Save and LaTeX `TeX-master-file' (without querying the user)"
@@ -484,6 +491,8 @@ layers configuration. You are free to put any user code."
   (sp-pair "`" nil :actions :rem)
   ;;;
 
+  (add-to-list 'exec-path "/usr/texbin")
+  (add-to-list 'exec-path "/Library/TeX/texbin")
 )
 
 
@@ -494,10 +503,8 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (evil-magit toc-org smeargle reveal-in-osx-finder polymode pbcopy osx-trash orgit org-repo-todo org-present org-pomodoro alert log4e gntp org-plus-contrib org-bullets mmm-mode markdown-toc markdown-mode magit-gitflow magit magit-popup git-commit launchctl htmlize helm-gitignore request helm-flyspell helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger gh-md with-editor ess-smart-equals ess-R-object-popup ess-R-data-view ctable ess julia-mode company-statistics company-quickhelp pos-tip company-auctex company auto-yasnippet yasnippet auto-dictionary auctex ac-ispell auto-complete ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package spacemacs-theme spaceline smooth-scrolling restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines open-junk-file neotree move-text macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-args evil-anzu eval-sexp-fu elisp-slime-nav define-word clean-aindent-mode buffer-move bracketed-paste auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))))
-(custom-set-faces
+)
+ (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
