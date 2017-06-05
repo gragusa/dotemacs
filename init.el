@@ -4,8 +4,8 @@
 
 (defun dotspacemacs/layers ()
   "Configuration Layers declaration.
-You should not put any user code in this function besides modifying the variable
-values."
+  You should not put any user code in this function besides modifying the variable
+  values."
   (setq-default
    ;; Base distribution to use. This is a layer contained in the directory
    ;; `+distribution'. For now available distributions are `spacemacs-base'
@@ -18,6 +18,9 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     yaml
+     html
+     python
      csv
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -31,6 +34,8 @@ values."
      git
      markdown
      (org :variables org-enable-reveal-js-support t)
+     (spell-checking :variables enable-flyspell-auto-completion t)
+     evil-commentary
      x-org
      ess
      (latex :variables
@@ -87,7 +92,7 @@ values."
    ;; variable is `emacs' then the `holy-mode' is enabled at startup. `hybrid'
    ;; uses emacs key bindings for vim's insert mode, but otherwise leaves evil
    ;; unchanged. (default 'vim)
-   dotspacemacs-editing-style 'emacs
+   dotspacemacs-editing-style 'vim
    ;; If non nil output loading progress in `*Messages*' buffer. (default nil)
    dotspacemacs-verbose-loading nil
    ;; Specify the startup banner. Default value is `official', it displays
@@ -495,7 +500,51 @@ layers configuration. You are free to put any user code."
   (add-to-list 'exec-path "/usr/texbin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
 
+;;   (setq mu4e-maildir (expand-file-name "~/.Maildir"))
 
+;;   ;; (setq mu4e-drafts-folder "/[Gmail].Drafts")
+;;   ;; (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+;;   ;; (setq mu4e-trash-folder  "/[Gmail].Trash")
+
+;;   ;; don't save message to Sent Messages, GMail/IMAP will take care of this
+;;   (setq mu4e-sent-messages-behavior 'delete)
+
+;;   ;; setup some handy shortcuts
+;;   (setq mu4e-maildir-shortcuts
+;;         '(("/INBOX"             . ?i)
+;;           ("/[Gmail].Sent Mail" . ?s)
+;;           ("/[Gmail].Trash"     . ?t)))
+
+;;   (setq mu4e-mu-binary "/usr/local/bin/mu")
+
+;; ;; allow for updating mail using 'U' in the main view:
+;;   (setq mu4e-get-mail-command "offlineimap")
+
+;; ;; something about ourselves
+;; ;; I don't use a signature...
+;;   (setq
+;;    user-mail-address "giuseppe.ragusa@gmail.com"
+;;    user-full-name  "Giuseppe Ragusa"
+;;    ;; message-signature
+;;    ;;  (concat
+;;    ;;    "Foo X. Bar\n"
+;;    ;;    "http://www.example.com\n")
+;;    )
+
+;; ;; sending mail -- replace USERNAME with your gmail username
+;; ;; also, make sure the gnutls command line utils are installed
+;; ;; package 'gnutls-bin' in Debian/Ubuntu, 'gnutls' in Archlinux.
+
+;; (setq message-send-mail-function 'smtpmail-send-it
+;;       starttls-use-gnutls t
+;;       smtpmail-starttls-credentials
+;;       '(("smtp.gmail.com" 587 nil nil))
+;;       smtpmail-auth-credentials
+;;       (expand-file-name "~/.authinfo.gpg")
+;;       smtpmail-default-smtp-server "smtp.gmail.com"
+;;       smtpmail-smtp-server "smtp.gmail.com"
+;;       smtpmail-smtp-service 587
+;;       smtpmail-debug-info t)
 )
 
 
@@ -508,8 +557,8 @@ layers configuration. You are free to put any user code."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (auctex-latexmk csv-mode multiple-cursors ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle reveal-in-osx-finder restart-emacs rainbow-delimiters popwin polymode persp-mode pcre2el pbcopy paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum linum-relative link-hint launchctl info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flyspell-correct-helm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ess-smart-equals ess-R-object-popup ess-R-data-view elisp-slime-nav dumb-jump company-statistics company-quickhelp company-auctex column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
- 
+    (yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data mu4e-maildirs-extension mu4e-alert ht yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode company-anaconda anaconda-mode pythonic powerline spinner ox-reveal alert log4e gntp org-plus-contrib markdown-mode hydra parent-mode projectile pkg-info epl request gitignore-mode flyspell-correct flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg undo-tree highlight ctable ess julia-mode f s diminish pos-tip company bind-map bind-key yasnippet packed dash auctex helm avy helm-core async auto-complete popup auctex-latexmk csv-mode multiple-cursors ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle reveal-in-osx-finder restart-emacs rainbow-delimiters popwin polymode persp-mode pcre2el pbcopy paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum linum-relative link-hint launchctl info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flyspell-correct-helm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ess-smart-equals ess-R-object-popup ess-R-data-view elisp-slime-nav dumb-jump company-statistics company-quickhelp company-auctex column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
