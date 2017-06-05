@@ -18,6 +18,7 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     csv
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -29,7 +30,7 @@ values."
      osx
      git
      markdown
-     org
+     (org :variables org-enable-reveal-js-support t)
      x-org
      ess
      (latex :variables
@@ -53,7 +54,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(multiple-cursors)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -119,11 +120,11 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   ;; dotspacemacs-default-font '("Source Code Pro"
-   ;;                             :size 13
-   ;;                             :weight normal
-   ;;                             :width normal
-   ;;                             :powerline-scale 1.1)
+   dotspacemacs-default-font '("Monaco"
+                               :size 16
+                               :weight normal
+                               :width normal
+                               :powerline-scale 1.1)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The leader key accessible in `emacs state' and `insert state'
@@ -252,6 +253,12 @@ It is called immediately after `dotspacemacs/init'. You are free
 to put almost any user code here. The exception is org related
 code, which should be placed in `dotspacemacs/user-config'."
   (add-to-list 'load-path "~/.emacs.d/private/misc")
+
+  ;;(require 'multiple-cursors)
+  (global-set-key (kbd "M-<down>") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+
   (menu-bar-mode 1)
   (delete-selection-mode 1)
   (setq exec-path-from-shell-check-startup-files nil)
@@ -307,13 +314,11 @@ layers configuration. You are free to put any user code."
               (define-key inferior-ess-mode-map [(s-up)] 'comint-previous-input)
               (define-key inferior-ess-mode-map [(s-down)] 'comint-next-input)
               (define-key ess-mode-map (kbd "<s-return>") 'my-ess-eval)
-              ))
-
-  (add-hook 'ess-mode-hook
-            (lambda()
+              (define-key ess-mode-map (kbd "TAB") 'julia-latexsub-or-indent)
               (setq-local split-height-threshold nil)
               (setq-local split-width-threshold  0)
               ))
+
 
 
   ;; At times ESS shell gets very heavy...Once it was a 340Mb
@@ -366,7 +371,7 @@ layers configuration. You are free to put any user code."
   (setq org-latex-minted-options
         '(("fontsize" "\\small")
           ("obeytabs" "true")
-          ("bgcolor" "lightgray")
+          ("bgcolor" "gray!20")
           ("frame" "single")
           ("linenos" "true")
           ("mathescape" "true")
@@ -407,11 +412,7 @@ layers configuration. You are free to put any user code."
     (TeX-command "View" 'TeX-master-file)
     )
 
-  (add-hook 'ess-julia-mode-hook
-            (lambda()
-                  (define-key
-                    ess-julia-mode-map (kbd "TAB") 'julia-latexsub-or-indent)
-                  ))
+
 
   (add-hook 'LaTeX-mode-hook
             (lambda ()
@@ -457,7 +458,7 @@ layers configuration. You are free to put any user code."
           ;; ... more templates here ...
           )))
 
-  (require 'org-protocol-capture-html)
+
 
 
   ;; somewhere after (require 'ess-site)
@@ -493,6 +494,8 @@ layers configuration. You are free to put any user code."
 
   (add-to-list 'exec-path "/usr/texbin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
+
+
 )
 
 
@@ -503,8 +506,11 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-)
- (custom-set-faces
+ '(package-selected-packages
+   (quote
+    (auctex-latexmk csv-mode multiple-cursors ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle reveal-in-osx-finder restart-emacs rainbow-delimiters popwin polymode persp-mode pcre2el pbcopy paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum linum-relative link-hint launchctl info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flyspell-correct-helm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ess-smart-equals ess-R-object-popup ess-R-data-view elisp-slime-nav dumb-jump company-statistics company-quickhelp company-auctex column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+ 
+(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
