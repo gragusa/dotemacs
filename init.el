@@ -22,6 +22,9 @@
      html
      python
      csv
+     elfeed
+     (elfeed :variables
+             rmh-elfeed-org-files (list "~/Dropbox/org/rssfeeds.org"))
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -34,7 +37,7 @@
      git
      markdown
      (org :variables org-enable-reveal-js-support t)
-     (spell-checking :variables enable-flyspell-auto-completion t)
+     (spell-checking :variables enable-flyspell-auto-completion nil)
      evil-commentary
      x-org
      ess
@@ -61,7 +64,8 @@
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(evil-mc)
+   dotspacemacs-additional-packages '(evil-multiedit)
+
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -72,7 +76,7 @@
 (defun dotspacemacs/init ()
   "Initialization function.
 This function is called at the very startup of Spacemacs initialization
-before layers configuration.
+before layers configuration. 
 You should not put any user code in there besides modifying the variable
 values."
   ;; This setq-default sexp is an exhaustive list of all the supported
@@ -128,7 +132,7 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Monaco"
-                               :size 16
+                               :size 14
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -261,11 +265,6 @@ to put almost any user code here. The exception is org related
 code, which should be placed in `dotspacemacs/user-config'."
   (add-to-list 'load-path "~/.emacs.d/private/misc")
 
-  ;;(require 'multiple-cursors)
-  (global-set-key (kbd "M-<down>") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-
   (menu-bar-mode 1)
   (delete-selection-mode 1)
   (setq exec-path-from-shell-check-startup-files nil)
@@ -278,6 +277,31 @@ code, which should be placed in `dotspacemacs/user-config'."
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
   (spacemacs|disable-company poly-markdown+R-mode)
+
+  ;; Highlights all matches of the selection in the buffer.
+  (define-key evil-visual-state-map "R" 'evil-multiedit-match-all)
+
+  ;; Match the word under cursor (i.e. make it an edit region). Consecutive presses will
+  ;; incrementally add the next unmatched match.
+  (define-key evil-normal-state-map (kbd "s-d") 'evil-multiedit-match-and-next)
+  ;; Match selected region.
+  (define-key evil-visual-state-map (kbd "s-d") 'evil-multiedit-and-next)
+  ;; Insert marker at point
+  (define-key evil-insert-state-map (kbd "s-d") 'evil-multiedit-toggle-marker-here)
+
+  ;; Same as s-d but in reverse.
+  (define-key evil-normal-state-map (kbd "s-D") 'evil-multiedit-match-and-prev)
+  (define-key evil-visual-state-map (kbd "s-D") 'evil-multiedit-and-prev)
+
+  (evil-ex-define-cmd "ie[dit]" 'evil-multiedit-ex-match)
+
+
+  (with-eval-after-load 'org (setq org-directory
+                                   '("~/Dropbox/org")))
+
+  (with-eval-after-load 'org (setq org-agenda-files
+                                   '("~/Dropbox/org/grnotes.org")))
+
   (global-set-key [home] 'beginning-of-line)
   (global-set-key [end] 'end-of-line)
   (global-set-key [(s-right)] 'end-of-line)
@@ -390,8 +414,8 @@ layers configuration. You are free to put any user code."
   (add-to-list 'org-latex-packages-alist '("" "minted" nil))
   ;; (add-to-list 'org-latex-packages-alist '("" "mathpazo" t))
 
-  (setq org-latex-pdf-process '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-                                "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  (setq org-latex-pdf-process '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                                "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
   (add-hook
    'org-beamer-mode-hook
@@ -567,7 +591,7 @@ layers configuration. You are free to put any user code."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (xterm-color shell-pop org-ref pdf-tools key-chord ivy tablist multi-term helm-bibtex parsebib eshell-z eshell-prompt-extras esh-help biblio biblio-core yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data mu4e-maildirs-extension mu4e-alert ht yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode company-anaconda anaconda-mode pythonic powerline spinner ox-reveal alert log4e gntp org-plus-contrib markdown-mode hydra parent-mode projectile pkg-info epl request gitignore-mode flyspell-correct flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg undo-tree highlight ctable ess julia-mode f s diminish pos-tip company bind-map bind-key yasnippet packed dash auctex helm avy helm-core async auto-complete popup auctex-latexmk csv-mode multiple-cursors ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle reveal-in-osx-finder restart-emacs rainbow-delimiters popwin polymode persp-mode pcre2el pbcopy paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum linum-relative link-hint launchctl info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flyspell-correct-helm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ess-smart-equals ess-R-object-popup ess-R-data-view elisp-slime-nav dumb-jump company-statistics company-quickhelp company-auctex column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+    (elfeed-web elfeed-goodies ace-jump-mode simple-httpd elfeed-org noflet elfeed evil-multiedit org-category-capture org-mime dash-functional flyspell-popup evil-commentary xterm-color shell-pop org-ref pdf-tools key-chord ivy tablist multi-term helm-bibtex parsebib eshell-z eshell-prompt-extras esh-help biblio biblio-core yaml-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data mu4e-maildirs-extension mu4e-alert ht yapfify pyvenv pytest pyenv-mode py-isort pip-requirements live-py-mode hy-mode helm-pydoc cython-mode company-anaconda anaconda-mode pythonic powerline spinner ox-reveal alert log4e gntp org-plus-contrib markdown-mode hydra parent-mode projectile pkg-info epl request gitignore-mode flyspell-correct flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg undo-tree highlight ctable ess julia-mode f s diminish pos-tip company bind-map bind-key yasnippet packed dash auctex helm avy helm-core async auto-complete popup auctex-latexmk csv-mode multiple-cursors ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle reveal-in-osx-finder restart-emacs rainbow-delimiters popwin polymode persp-mode pcre2el pbcopy paradox osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum linum-relative link-hint launchctl info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flyspell-correct-helm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ess-smart-equals ess-R-object-popup ess-R-data-view elisp-slime-nav dumb-jump company-statistics company-quickhelp company-auctex column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
