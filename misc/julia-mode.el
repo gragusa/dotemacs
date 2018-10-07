@@ -100,10 +100,11 @@ This function provides equivalent functionality, but makes no efforts to optimis
     (modify-syntax-entry ?\) ")( " table)
     ;; Here, we treat ' as punctuation (when it's used for transpose),
     ;; see our use of `julia-char-regex' for handling ' as a character
-    ;; delimeter
+    ;; delimiter
     (modify-syntax-entry ?'  "." table)
     (modify-syntax-entry ?\" "\"" table)
     (modify-syntax-entry ?` "\"" table)
+    (modify-syntax-entry ?\\ "\\" table)
 
     (modify-syntax-entry ?. "." table)
     (modify-syntax-entry ?? "." table)
@@ -130,6 +131,71 @@ This function provides equivalent functionality, but makes no efforts to optimis
          (or (repeat 0 8 (not (any "'"))) (not (any "\\"))
              "\\\\"))
         (group "'"))))
+
+(defconst julia-hanging-operator-regexp
+  ;; taken from julia-parser.scm
+  (concat "^[^#\n]+ "
+          (regexp-opt
+           '( ;; conditional
+             "?"
+             ;; assignment
+             "=" ":=" "+=" "-=" "*=" "/=" "//=" ".//=" ".*=" "./=" "\\=" ".\\="
+             "^=" ".^=" "÷=" ".÷=" "%=" ".%=" "|=" "&=" "$=" "=>" "<<=" ">>="
+             ">>>=" "~" ".+=" ".-="
+             ;; arrow
+             "--" "-->" "←" "→" "↔" "↚" "↛" "↠" "↣" "↦" "↮" "⇎" "⇏" "⇒" "⇔" "⇴"
+             "⇶" "⇷" "⇸" "⇹" "⇺" "⇻" "⇼" "⇽" "⇾" "⇿" "⟵" "⟶" "⟷" "⟷" "⟹"
+             "⟺" "⟻" "⟼" "⟽" "⟾" "⟿" "⤀" "⤁" "⤂" "⤃" "⤄" "⤅" "⤆" "⤇" "⤌"
+             "⤍" "⤎" "⤏" "⤐" "⤑" "⤔" "⤕" "⤖" "⤗" "⤘" "⤝" "⤞" "⤟" "⤠" "⥄" "⥅"
+             "⥆" "⥇" "⥈" "⥊" "⥋" "⥎" "⥐" "⥒" "⥓" "⥖" "⥗" "⥚" "⥛" "⥞" "⥟" "⥢"
+             "⥤" "⥦" "⥧" "⥨" "⥩" "⥪" "⥫" "⥬" "⥭" "⥰" "⧴" "⬱" "⬰" "⬲" "⬳" "⬴"
+             "⬵" "⬶" "⬷" "⬸" "⬹" "⬺" "⬻" "⬼" "⬽" "⬾" "⬿" "⭀" "⭁" "⭂" "⭃" "⭄"
+             "⭇" "⭈" "⭉" "⭊" "⭋" "⭌" "￩" "￫"
+             ;; or and and
+             "&&" "||"
+             ;; comparison
+             ">" "<" ">=" "≥" "<=" "≤" "==" "===" "≡" "!=" "≠" "!==" "≢" ".>"
+             ".<" ".>=" ".≥" ".<=" ".≤" ".==" ".!=" ".≠" ".=" ".!" "<:" ">:" "∈"
+             "∉" "∋" "∌" "⊆" "⊈" "⊂" "⊄" "⊊" "∝" "∊" "∍" "∥" "∦" "∷" "∺" "∻" "∽"
+             "∾" "≁" "≃" "≄" "≅" "≆" "≇" "≈" "≉" "≊" "≋" "≌" "≍" "≎" "≐" "≑" "≒"
+             "≓" "≔" "≕" "≖" "≗" "≘" "≙" "≚" "≛" "≜" "≝" "≞" "≟" "≣" "≦" "≧" "≨"
+             "≩" "≪" "≫" "≬" "≭" "≮" "≯" "≰" "≱" "≲" "≳" "≴" "≵" "≶" "≷" "≸" "≹"
+             "≺" "≻" "≼" "≽" "≾" "≿" "⊀" "⊁" "⊃" "⊅" "⊇" "⊉" "⊋" "⊏" "⊐" "⊑" "⊒"
+             "⊜" "⊩" "⊬" "⊮" "⊰" "⊱" "⊲" "⊳" "⊴" "⊵" "⊶" "⊷" "⋍" "⋐" "⋑" "⋕" "⋖"
+             "⋗" "⋘" "⋙" "⋚" "⋛" "⋜" "⋝" "⋞" "⋟" "⋠" "⋡" "⋢" "⋣" "⋤" "⋥" "⋦" "⋧"
+             "⋨" "⋩" "⋪" "⋫" "⋬" "⋭" "⋲" "⋳" "⋴" "⋵" "⋶" "⋷" "⋸" "⋹" "⋺" "⋻" "⋼"
+             "⋽" "⋾" "⋿" "⟈" "⟉" "⟒" "⦷" "⧀" "⧁" "⧡" "⧣" "⧤" "⧥" "⩦" "⩧" "⩪" "⩫"
+             "⩬" "⩭" "⩮" "⩯" "⩰" "⩱" "⩲" "⩳" "⩴" "⩵" "⩶" "⩷" "⩸" "⩹" "⩺" "⩻" "⩼"
+             "⩽" "⩾" "⩿" "⪀" "⪁" "⪂" "⪃" "⪄" "⪅" "⪆" "⪇" "⪈" "⪉" "⪊" "⪋" "⪌" "⪍"
+             "⪎" "⪏" "⪐" "⪑" "⪒" "⪓" "⪔" "⪕" "⪖" "⪗" "⪘" "⪙" "⪚" "⪛" "⪜" "⪝" "⪞"
+             "⪟" "⪠" "⪡" "⪢" "⪣" "⪤" "⪥" "⪦" "⪧" "⪨" "⪩" "⪪" "⪫" "⪬" "⪭" "⪮" "⪯"
+             "⪰" "⪱" "⪲" "⪳" "⪴" "⪵" "⪶" "⪷" "⪸" "⪹" "⪺" "⪻" "⪼" "⪽" "⪾" "⪿" "⫀"
+             "⫁" "⫂" "⫃" "⫄" "⫅" "⫆" "⫇" "⫈" "⫉" "⫊" "⫋" "⫌" "⫍" "⫎" "⫏" "⫐" "⫑"
+             "⫒" "⫓" "⫔" "⫕" "⫖" "⫗" "⫘" "⫙" "⫷" "⫸" "⫹" "⫺" "⊢" "⊣"
+             ;; pipe, colon
+             "|>" "<|" ":" ".."
+             ;; plus
+             "+" "-" "⊕" "⊖" "⊞" "⊟" ".+" ".-" "++" "|" "∪" "∨" "$" "⊔" "±" "∓"
+             "∔" "∸" "≂" "≏" "⊎" "⊻" "⊽" "⋎" "⋓" "⧺" "⧻" "⨈" "⨢" "⨣" "⨤" "⨥" "⨦"
+             "⨧" "⨨" "⨩" "⨪" "⨫" "⨬" "⨭" "⨮" "⨹" "⨺" "⩁" "⩂" "⩅" "⩊" "⩌" "⩏" "⩐"
+             "⩒" "⩔" "⩖" "⩗" "⩛" "⩝" "⩡" "⩢" "⩣"
+             ;; bitshift
+             "<<" ">>" ">>>" ".<<" ".>>" ".>>>"
+             ;; times
+             "*" "/" "./" "÷" ".÷" "%" "⋅" "∘" "×" ".%" ".*" "\\"
+             ".\\" "&" "∩" "∧" "⊗" "⊘" "⊙" "⊚" "⊛" "⊠" "⊡" "⊓" "∗" "∙" "∤" "⅋"
+             "≀" "⊼" "⋄" "⋆" "⋇" "⋉" "⋊" "⋋" "⋌" "⋏" "⋒" "⟑" "⦸" "⦼" "⦾" "⦿" "⧶"
+             "⧷" "⨇" "⨰" "⨱" "⨲" "⨳" "⨴" "⨵" "⨶" "⨷" "⨸" "⨻" "⨼" "⨽" "⩀" "⩃" "⩄"
+             "⩋" "⩍" "⩎" "⩑" "⩓" "⩕" "⩘" "⩚" "⩜" "⩞" "⩟" "⩠" "⫛" "⊍" "▷" "⨝" "⟕"
+             "⟖" "⟗"
+             ;; rational
+             "//" ".//"
+             ;; power
+             "^" ".^" "↑" "↓" "⇵" "⟰" "⟱" "⤈" "⤉" "⤊" "⤋" "⤒" "⤓" "⥉" "⥌" "⥍"
+             "⥏" "⥑" "⥔" "⥕" "⥘" "⥙" "⥜" "⥝" "⥠" "⥡" "⥣" "⥥" "⥮" "⥯" "￪" "￬"
+             ;; decl, dot
+             "::" "."))
+          (regexp-opt '(" #" " \n" "#" "\n"))))
 
 (defconst julia-triple-quoted-string-regex
   ;; We deliberately put a group on the first and last delimiter, so
@@ -163,19 +229,22 @@ This function provides equivalent functionality, but makes no efforts to optimis
   (rx line-start (* (or space "@inline" "@noinline")) symbol-start
       (* (seq (1+ (or word (syntax symbol))) ".")) ; module name
       (group (1+ (or word (syntax symbol))))
-      (* space)
       (? "{" (* (not (any "}"))) "}")
-      (* space)
       "(" (* (or
               (seq "(" (* (not (any "(" ")"))) ")")
               (not (any "(" ")"))))
       ")"
       (* space)
+      (? "::" (* space) (1+ (not (any space))))
+      (* space)
+      (* (seq "where" (or "{" (+ space)) (+ (not (any "=")))))
       "="
       (not (any "="))))
 
 (defconst julia-type-regex
-  (rx symbol-start (or "immutable" "type" "abstract") (1+ space) (group (1+ (or word (syntax symbol))))))
+  (rx symbol-start (or "immutable" "type" ;; remove after 0.6
+                       "abstract type" "primitive type" "struct" "mutable struct")
+      (1+ space) (group (1+ (or word (syntax symbol))))))
 
 (defconst julia-type-annotation-regex
   (rx "::" (0+ space) (group (1+ (or word (syntax symbol))))))
@@ -192,10 +261,12 @@ This function provides equivalent functionality, but makes no efforts to optimis
 (defconst julia-keyword-regex
   (julia--regexp-opt
    '("if" "else" "elseif" "while" "for" "begin" "end" "quote"
-     "try" "catch" "return" "local" "abstract" "function" "macro" "ccall"
-     "finally" "typealias" "break" "continue" "type" "global"
-     "module" "using" "import" "export" "const" "let" "bitstype" "do" "in"
-     "baremodule" "importall" "immutable")
+     "try" "catch" "return" "local" "function" "macro" "ccall"
+     "finally" "break" "continue" "global" "where"
+     "module" "using" "import" "export" "const" "let" "do" "in"
+     "baremodule" "importall"
+     "immutable" "type" "bitstype" "abstract" "typealias" ;; remove after 0.6
+     "abstract type" "primitive type" "struct" "mutable struct")
    'symbols))
 
 (defconst julia-builtin-regex
@@ -215,7 +286,7 @@ This function provides equivalent functionality, but makes no efforts to optimis
      "Cuchar" "Cshort" "Cushort" "Cint" "Cuint" "Clonglong" "Culonglong" "Cintmax_t" "Cuintmax_t"
      "Cfloat" "Cdouble" "Cptrdiff_t" "Cssize_t" "Csize_t"
      "Cchar" "Clong" "Culong" "Cwchar_t"
-     "Char" "ASCIIString" "UTF8String" "ByteString" "SubString"
+     "Char" "String" "SubString"
      "Array" "DArray" "AbstractArray" "AbstractVector" "AbstractMatrix" "AbstractSparseMatrix" "SubArray" "StridedArray" "StridedVector" "StridedMatrix" "VecOrMat" "StridedVecOrMat" "DenseArray" "SparseMatrixCSC" "BitArray"
      "Range" "OrdinalRange" "StepRange" "UnitRange" "FloatRange"
      "Tuple" "NTuple" "Vararg"
@@ -226,7 +297,7 @@ This function provides equivalent functionality, but makes no efforts to optimis
 
 (defconst julia-quoted-symbol-regex
   ;; :foo and :foo2 are valid, but :123 is not.
-  (rx (or whitespace "(" "[" "," "=")
+  (rx (or bol whitespace "(" "[" "," "=")
       (group ":" (or letter (syntax symbol)) (0+ (or word (syntax symbol))))))
 
 (defconst julia-font-lock-keywords
@@ -257,14 +328,20 @@ This function provides equivalent functionality, but makes no efforts to optimis
    ))
 
 (defconst julia-block-start-keywords
-  (list "if" "while" "for" "begin" "try" "function" "type" "let" "macro"
-        "quote" "do" "immutable"))
+  (list "if" "while" "for" "begin" "try" "function" "let" "macro"
+        "quote" "do" "module"
+        "immutable" "type" ;; remove after 0.6
+        "abstract type" "primitive type" "struct" "mutable struct"))
+
+;; For keywords that begin a block without additional indentation
+(defconst julia-block-start-keywords-no-indent
+  (list "module"))
 
 (defconst julia-block-end-keywords
   (list "end" "else" "elseif" "catch" "finally"))
 
 (defun julia-stringify-triple-quote ()
-  "Put `syntax-table' property on triple-quoted string delimeters.
+  "Put `syntax-table' property on triple-quoted string delimiters.
 
 Based on `python-syntax-stringify'."
   (let* ((string-start-pos (- (point) 3))
@@ -336,16 +413,45 @@ a keyword if used as a field name, X.word, or quoted, :word."
   (and (or (= (point) 1)
 	   (and (not (equal (char-before (point)) ?.))
 		(not (equal (char-before (point)) ?:))))
+       (not (looking-at "("))           ; handle "function(" when on (
        (member (current-word t) kw-list)
-       (not (julia-in-comment))
        ;; 'end' is not a keyword when used for indexing, e.g. foo[end-2]
        (or (not (equal (current-word t) "end"))
-           (not (julia-in-brackets)))))
+           (not (julia-in-brackets)))
+       (not (julia-in-comment))))
 
 ;; if backward-sexp gives an error, move back 1 char to move over the '('
 (defun julia-safe-backward-sexp ()
   (if (condition-case nil (backward-sexp) (error t))
       (ignore-errors (backward-char))))
+
+(defun julia-following-import-export-using ()
+  "If the current line follows an `export` or `import` keyword
+with valid syntax, return the position of the keyword, otherwise
+`nil`. Works by stepping backwards through comma-separated
+symbol, gives up when this is not true."
+  ;; Implementation accepts a single Module: right after the keyword, and saves
+  ;; the module name for future use, but does not enforce that `export` has no
+  ;; module name.
+  (let ((done nil)                      ; find keyword or give up
+        (module nil))                   ; found "Module:"
+    (save-excursion
+      (beginning-of-line)
+      (while (and (not done) (< (point-min) (point)))
+        (julia-safe-backward-sexp)
+        (cond
+         ((looking-at (rx (or "import" "export" "using")))
+          (setf done (point)))
+         ((looking-at (rx (group (* (or word (syntax symbol)))) (0+ space) ":"))
+          (if module
+              (setf done 'broken)
+            (setf module (match-string-no-properties 1))))
+         ((looking-at (rx (* (or word (syntax symbol))) (0+ space) ","))
+          (when module (setf done 'broken)))
+         (t (setf done 'broken)))))
+    (if (eq done 'broken)
+        nil
+      done)))
 
 (defun julia-last-open-block-pos (min)
   "Return the position of the last open block, if one found.
@@ -357,9 +463,8 @@ Do not move back beyond position MIN."
         (setq count
               (cond ((julia-at-keyword julia-block-start-keywords)
                      (+ count 1))
-                    ;; fixme: breaks on strings
                     ((and (equal (current-word t) "end")
-                          (not (julia-in-comment)) (not (julia-in-brackets)))
+                          (not (julia-in-comment)))
                      (- count 1))
                     (t count))))
       (if (> count 0)
@@ -383,255 +488,149 @@ beginning of the buffer."
   (unless (eq (point) (point-min))
     (backward-char)))
 
-(defvar julia-max-paren-lookback 400
-  "When indenting, don't look back more than this
-many characters to see if there are unclosed parens.
-
-This variable has a major effect on indent performance if set too
-high.")
-
-(defvar julia-max-block-lookback 5000
+(defcustom julia-max-block-lookback 5000
   "When indenting, don't look back more than this
 many characters to see if there are unclosed blocks.
 
 This variable has a moderate effect on indent performance if set too
-high.")
+high, but stops indenting in the middle of long blocks if set too low."
+  :type 'integer
+  :group 'julia)
 
 (defun julia-paren-indent ()
   "Return the column of the text following the innermost
 containing paren before point, so we can align succeeding code
 with it. Returns nil if we're not within nested parens."
   (save-excursion
-    ;; Back up to previous line (beginning-of-line was already called)
-    (backward-char)
-    (let ((min-pos (max (- (point) julia-max-paren-lookback)
-                        (point-min)))
-          (open-count 0))
-      (while (and (> (point) min-pos)
-                  (not (plusp open-count)))
+    (beginning-of-line)
+    (let ((parser-state (syntax-ppss)))
+      (cond ((nth 3 parser-state) nil)       ;; strings
+            ((= (nth 0 parser-state) 0) nil) ;; top level
+            (t
+             (ignore-errors ;; return nil if any of these movements fail
+               (beginning-of-line)
+               (skip-syntax-forward " ")
+               (let ((possibly-close-paren-point (point)))
+                 (backward-up-list)
+                 (let ((open-paren-point (point)))
+                   (forward-char)
+                   (skip-syntax-forward " ")
+                   (if (eolp)
+                       (progn
+                         (up-list)
+                         (backward-char)
+                         (let ((paren-closed (= (point) possibly-close-paren-point)))
+                           (goto-char open-paren-point)
+                           (beginning-of-line)
+                           (skip-syntax-forward " ")
+                           (+ (current-column)
+                              (if paren-closed
+                                  0
+                                julia-indent-offset))))
+                     (current-column))))))))))
 
-        (when (looking-at (rx (any "[" "]" "(" ")")))
-          (unless (or (julia-in-string) (julia-in-comment))
-            (cond ((looking-at (rx (any "[" "(")))
-                   (incf open-count))
-                  ((looking-at (rx (any "]" ")")))
-                   (decf open-count)))))
+(defun julia-prev-line-skip-blank-or-comment ()
+  "Move point to beginning of previous line skipping blank lines
+and lines including only comments. Returns number of lines moved.
+A return of -1 signals that we moved to the first line of
+the (possibly narrowed) buffer, so there is nowhere else to go."
+  (catch 'result
+    (let ((moved 0) this-move)
+      (while t
+        (setq this-move (forward-line -1))
+        (cond
+         ;; moved into comment or blank
+         ((and (= 0 this-move)
+               (or (looking-at-p "^\\s-*\\(?:#.*\\)*$")
+                   (julia-in-comment)))
+          (incf moved))
+         ;; success
+         ((= 0 this-move)
+          (throw 'result (1+ moved)))
+         ;; on first line and in comment
+         ((and (bobp)
+               (or (looking-at-p "^\\s-*\\(?:#.*\\)*$")
+                   (julia-in-comment)))
+          (throw 'result -1))
+         ((bobp)
+          (throw 'result moved))
+         (t
+          (throw 'result 0)))))))
 
-        (julia--safe-backward-char))
+(defun julia-indent-hanging ()
+  "Calculate indentation for lines that follow \"hanging\"
+operators (operators that end the previous line) as defined in
+`julia-hanging-operator-regexp'. An assignment operator ending
+the previous line increases the indent as do the other operators
+unless another operator is found two lines up. Previous line
+means previous line after skipping blank lines and lines with
+only comments."
+  (let (prev-indent)
+    (save-excursion
+      (when (> (julia-prev-line-skip-blank-or-comment) 0)
+        (setq prev-indent (current-indentation))
+        (when (looking-at-p julia-hanging-operator-regexp)
+          (if (and (> (julia-prev-line-skip-blank-or-comment) 0)
+                   (looking-at-p julia-hanging-operator-regexp))
+              ;; two preceding hanging operators => indent same as line
+              ;; above
+              prev-indent
+            ;; one preceding hanging operator => increase indent from line
+            ;; above
+            (+ julia-indent-offset prev-indent)))))))
 
-      (if (plusp open-count)
-          (progn (forward-char 2)
-                 (while (looking-at (rx blank))
-                   (forward-char))
-                 (current-column))
-        nil))))
+(defun julia-indent-in-string ()
+  "Indentation inside strings with newlines is \"manual\",
+meaning always increase indent on TAB and decrease on S-TAB."
+  (save-excursion
+    (beginning-of-line)
+    (when (julia-in-string)
+      (if (member this-command '(julia-latexsub-or-indent
+                                 ess-indent-or-complete))
+          (+ julia-indent-offset (current-indentation))
+        ;; return the current indentation to prevent other functions from
+        ;; indenting inside strings
+        (current-indentation)))))
+
+(defun julia-indent-import-export-using ()
+  "Indent offset for lines that follow `import` or `export`, otherwise nil."
+  (when (julia-following-import-export-using)
+    julia-indent-offset))
 
 (defun julia-indent-line ()
   "Indent current line of julia code."
   (interactive)
   (let* ((point-offset (- (current-column) (current-indentation))))
-    (end-of-line)
     (indent-line-to
      (or
-      ;; If we're inside an open paren, indent to line up arguments.
-      (save-excursion
-        (beginning-of-line)
-        (ignore-errors (julia-paren-indent)))
-      ;; If the previous line ends in =, increase the indent.
-      (ignore-errors ; if previous line is (point-min)
-        (save-excursion
-          (if (and (not (equal (point-min) (line-beginning-position)))
-                   (progn
-                     (forward-line -1)
-                     (end-of-line) (backward-char 1)
-                     (and (equal (char-after (point)) ?=)
-                          (not (julia-in-comment)))))
-              (+ julia-indent-offset (current-indentation))
-            nil)))
+      ;; note: if this first function returns nil the beginning of the line
+      ;; cannot be in a string
+      (julia-indent-in-string)
+      ;; If we're inside an open paren, indent to line up arguments. After this,
+      ;; we cannot be inside parens which includes brackets
+      (julia-paren-indent)
+      ;; indent due to hanging operators (lines ending in an operator)
+      (julia-indent-hanging)
+      ;; indent for import and export
+      (julia-indent-import-export-using)
       ;; Indent according to how many nested blocks we are in.
       (save-excursion
         (beginning-of-line)
+        ;; jump out of any comments
+        (let ((state (syntax-ppss)))
+          (when (nth 4 state)
+            (goto-char (nth 8 state))))
         (forward-to-indentation 0)
         (let ((endtok (julia-at-keyword julia-block-end-keywords))
               (last-open-block (julia-last-open-block (- (point) julia-max-block-lookback))))
           (max 0 (+ (or last-open-block 0)
-                    (if endtok (- julia-indent-offset) 0)))))))
+                    (if (or endtok
+                            (julia-at-keyword julia-block-start-keywords-no-indent))
+                        (- julia-indent-offset) 0)))))))
     ;; Point is now at the beginning of indentation, restore it
     ;; to its original position (relative to indentation).
     (when (>= point-offset 0)
       (move-to-column (+ (current-indentation) point-offset)))))
-
-(defmacro julia--should-indent (from to)
-  "Assert that we indent text FROM producing text TO in `julia-mode'."
-  `(with-temp-buffer
-     (let ((julia-indent-offset 4))
-       (julia-mode)
-       (insert ,from)
-       (indent-region (point-min) (point-max))
-       (should (equal (buffer-substring-no-properties (point-min) (point-max))
-                      ,to)))))
-
-;; Emacs 23.X doesn't include ert, so we ignore any errors that occur
-;; when we define tests.
-(ignore-errors
-  (require 'ert)
-
-  (ert-deftest julia--test-indent-if ()
-    "We should indent inside if bodies."
-    (julia--should-indent
-     "
-if foo
-bar
-end"
-     "
-if foo
-    bar
-end"))
-
-  (ert-deftest julia--test-indent-else ()
-    "We should indent inside else bodies."
-    (julia--should-indent
-     "
-if foo
-    bar
-else
-baz
-end"
-     "
-if foo
-    bar
-else
-    baz
-end"))
-
-  (ert-deftest julia--test-indent-toplevel ()
-    "We should not indent toplevel expressions. "
-    (julia--should-indent
-     "
-foo()
-bar()"
-     "
-foo()
-bar()"))
-
-  (ert-deftest julia--test-indent-nested-if ()
-    "We should indent for each level of indentation."
-    (julia--should-indent
-     "
-if foo
-    if bar
-bar
-    end
-end"
-     "
-if foo
-    if bar
-        bar
-    end
-end"))
-
-  (ert-deftest julia--test-indent-function ()
-    "We should indent function bodies."
-    (julia--should-indent
-     "
-function foo()
-bar
-end"
-     "
-function foo()
-    bar
-end"))
-
-  (ert-deftest julia--test-indent-begin ()
-    "We should indent after a begin keyword."
-    (julia--should-indent
-     "
-@async begin
-bar
-end"
-     "
-@async begin
-    bar
-end"))
-
-  (ert-deftest julia--test-indent-paren ()
-    "We should indent to line up with the text after an open paren."
-    (julia--should-indent
-     "
-foobar(bar,
-baz)"
-     "
-foobar(bar,
-       baz)"))
-
-  (ert-deftest julia--test-indent-paren-space ()
-    "We should indent to line up with the text after an open
-paren, even if there are additional spaces."
-    (julia--should-indent
-     "
-foobar( bar,
-baz )"
-     "
-foobar( bar,
-        baz )"))
-
-  (ert-deftest julia--test-indent-equals ()
-    "We should increase indent on a trailing =."
-    (julia--should-indent
-     "
-foo() =
-bar"
-     "
-foo() =
-    bar"))
-
-  (ert-deftest julia--test-indent-ignores-blank-lines ()
-    "Blank lines should not affect indentation of non-blank lines."
-    (julia--should-indent
-     "
-if foo
-        
-bar
-end"
-     "
-if foo
-    
-    bar
-end"))
-
-  (ert-deftest julia--test-indent-comment-equal ()
-    "`=` at the end of comment should not increase indent level."
-    (julia--should-indent
-     "
-# a =
-# b =
-c"
-     "
-# a =
-# b =
-c"))
-
-  (ert-deftest julia--test-indent-leading-paren ()
-    "`(` at the beginning of a line should not affect indentation."
-    (julia--should-indent
-     "
-(1)"
-     "
-(1)"))
-
-  (ert-deftest julia--test-top-level-following-paren-indent ()
-    "`At the top level, a previous line indented due to parens should not affect indentation."
-    (julia--should-indent
-     "y1 = f(x,
-       z)
-y2 = g(x)"
-     "y1 = f(x,
-       z)
-y2 = g(x)"))
-
-  (defun julia--run-tests ()
-    (interactive)
-    (ert-run-tests-interactively "julia--test")))
 
 (defalias 'julia-mode-prog-mode
   (if (fboundp 'prog-mode)
@@ -684,6 +683,14 @@ y2 = g(x)"))
   (setq indent-tabs-mode nil)
   (setq imenu-generic-expression julia-imenu-generic-expression)
   (imenu-add-to-menubar "Imenu"))
+
+(defun julia-manual-deindent ()
+  "Deindent by `julia-indent-offset' regardless of current
+indentation context. To be used to manually indent inside
+strings."
+  (interactive)
+  (indent-line-to (max 0 (- (current-indentation) julia-indent-offset))))
+(define-key julia-mode-map (kbd "<backtab>") 'julia-manual-deindent)
 
 (defvar julia-latexsubs (make-hash-table :test 'equal))
 
@@ -787,7 +794,6 @@ y2 = g(x)"))
 (puthash "\\Elzopeno" "ɔ" julia-latexsubs)
 (puthash "\\Elzrtld" "ɖ" julia-latexsubs)
 (puthash "\\Elzschwa" "ə" julia-latexsubs)
-(puthash "\\varepsilon" "ɛ" julia-latexsubs)
 (puthash "\\Elzpgamma" "ɣ" julia-latexsubs)
 (puthash "\\Elzpbgam" "ɤ" julia-latexsubs)
 (puthash "\\Elztrnh" "ɥ" julia-latexsubs)
@@ -866,11 +872,12 @@ y2 = g(x)"))
 (puthash "\\k" "̨" julia-latexsubs)
 (puthash "\\Elzsbbrg" "̪" julia-latexsubs)
 (puthash "\\wideutilde" "̰" julia-latexsubs)
-(puthash "\\underbar" "̱" julia-latexsubs)
+(puthash "\\underbar" "̲" julia-latexsubs)
 (puthash "\\Elzxl" "̵" julia-latexsubs)
 (puthash "\\Elzbar" "̶" julia-latexsubs)
 (puthash "\\sout" "̶" julia-latexsubs)
 (puthash "\\not" "̸" julia-latexsubs)
+(puthash "\\underleftrightarrow" "͍" julia-latexsubs)
 (puthash "\\Alpha" "Α" julia-latexsubs)
 (puthash "\\Beta" "Β" julia-latexsubs)
 (puthash "\\Gamma" "Γ" julia-latexsubs)
@@ -900,6 +907,7 @@ y2 = g(x)"))
 (puthash "\\gamma" "γ" julia-latexsubs)
 (puthash "\\delta" "δ" julia-latexsubs)
 (puthash "\\upepsilon" "ε" julia-latexsubs)
+(puthash "\\varepsilon" "ε" julia-latexsubs)
 (puthash "\\zeta" "ζ" julia-latexsubs)
 (puthash "\\eta" "η" julia-latexsubs)
 (puthash "\\theta" "θ" julia-latexsubs)
@@ -939,58 +947,58 @@ y2 = g(x)"))
 (puthash "\\textTheta" "ϴ" julia-latexsubs)
 (puthash "\\epsilon" "ϵ" julia-latexsubs)
 (puthash "\\backepsilon" "϶" julia-latexsubs)
-(puthash "\\^A" "\u1d2c" julia-latexsubs)
-(puthash "\\^B" "\u1d2e" julia-latexsubs)
-(puthash "\\^D" "\u1d30" julia-latexsubs)
-(puthash "\\^E" "\u1d31" julia-latexsubs)
-(puthash "\\^G" "\u1d33" julia-latexsubs)
-(puthash "\\^H" "\u1d34" julia-latexsubs)
-(puthash "\\^I" "\u1d35" julia-latexsubs)
-(puthash "\\^J" "\u1d36" julia-latexsubs)
-(puthash "\\^K" "\u1d37" julia-latexsubs)
-(puthash "\\^L" "\u1d38" julia-latexsubs)
-(puthash "\\^M" "\u1d39" julia-latexsubs)
-(puthash "\\^N" "\u1d3a" julia-latexsubs)
-(puthash "\\^O" "\u1d3c" julia-latexsubs)
-(puthash "\\^P" "\u1d3e" julia-latexsubs)
-(puthash "\\^R" "\u1d3f" julia-latexsubs)
-(puthash "\\^T" "\u1d40" julia-latexsubs)
-(puthash "\\^U" "\u1d41" julia-latexsubs)
-(puthash "\\^W" "\u1d42" julia-latexsubs)
-(puthash "\\^a" "\u1d43" julia-latexsubs)
-(puthash "\\^alpha" "\u1d45" julia-latexsubs)
-(puthash "\\^b" "\u1d47" julia-latexsubs)
-(puthash "\\^d" "\u1d48" julia-latexsubs)
-(puthash "\\^e" "\u1d49" julia-latexsubs)
-(puthash "\\^epsilon" "\u1d4b" julia-latexsubs)
-(puthash "\\^g" "\u1d4d" julia-latexsubs)
-(puthash "\\^k" "\u1d4f" julia-latexsubs)
-(puthash "\\^m" "\u1d50" julia-latexsubs)
-(puthash "\\^o" "\u1d52" julia-latexsubs)
-(puthash "\\^p" "\u1d56" julia-latexsubs)
-(puthash "\\^t" "\u1d57" julia-latexsubs)
-(puthash "\\^u" "\u1d58" julia-latexsubs)
-(puthash "\\^v" "\u1d5b" julia-latexsubs)
-(puthash "\\^beta" "\u1d5d" julia-latexsubs)
-(puthash "\\^gamma" "\u1d5e" julia-latexsubs)
-(puthash "\\^delta" "\u1d5f" julia-latexsubs)
-(puthash "\\^phi" "\u1d60" julia-latexsubs)
-(puthash "\\^chi" "\u1d61" julia-latexsubs)
-(puthash "\\_i" "\u1d62" julia-latexsubs)
-(puthash "\\_r" "\u1d63" julia-latexsubs)
-(puthash "\\_u" "\u1d64" julia-latexsubs)
-(puthash "\\_v" "\u1d65" julia-latexsubs)
-(puthash "\\_beta" "\u1d66" julia-latexsubs)
-(puthash "\\_gamma" "\u1d67" julia-latexsubs)
-(puthash "\\_rho" "\u1d68" julia-latexsubs)
-(puthash "\\_phi" "\u1d69" julia-latexsubs)
-(puthash "\\_chi" "\u1d6a" julia-latexsubs)
-(puthash "\\^c" "\u1d9c" julia-latexsubs)
-(puthash "\\^f" "\u1da0" julia-latexsubs)
-(puthash "\\^iota" "\u1da5" julia-latexsubs)
-(puthash "\\^Phi" "\u1db2" julia-latexsubs)
-(puthash "\\^z" "\u1dbb" julia-latexsubs)
-(puthash "\\^theta" "\u1dbf" julia-latexsubs)
+(puthash "\\^A" "ᴬ" julia-latexsubs)
+(puthash "\\^B" "ᴮ" julia-latexsubs)
+(puthash "\\^D" "ᴰ" julia-latexsubs)
+(puthash "\\^E" "ᴱ" julia-latexsubs)
+(puthash "\\^G" "ᴳ" julia-latexsubs)
+(puthash "\\^H" "ᴴ" julia-latexsubs)
+(puthash "\\^I" "ᴵ" julia-latexsubs)
+(puthash "\\^J" "ᴶ" julia-latexsubs)
+(puthash "\\^K" "ᴷ" julia-latexsubs)
+(puthash "\\^L" "ᴸ" julia-latexsubs)
+(puthash "\\^M" "ᴹ" julia-latexsubs)
+(puthash "\\^N" "ᴺ" julia-latexsubs)
+(puthash "\\^O" "ᴼ" julia-latexsubs)
+(puthash "\\^P" "ᴾ" julia-latexsubs)
+(puthash "\\^R" "ᴿ" julia-latexsubs)
+(puthash "\\^T" "ᵀ" julia-latexsubs)
+(puthash "\\^U" "ᵁ" julia-latexsubs)
+(puthash "\\^W" "ᵂ" julia-latexsubs)
+(puthash "\\^a" "ᵃ" julia-latexsubs)
+(puthash "\\^alpha" "ᵅ" julia-latexsubs)
+(puthash "\\^b" "ᵇ" julia-latexsubs)
+(puthash "\\^d" "ᵈ" julia-latexsubs)
+(puthash "\\^e" "ᵉ" julia-latexsubs)
+(puthash "\\^epsilon" "ᵋ" julia-latexsubs)
+(puthash "\\^g" "ᵍ" julia-latexsubs)
+(puthash "\\^k" "ᵏ" julia-latexsubs)
+(puthash "\\^m" "ᵐ" julia-latexsubs)
+(puthash "\\^o" "ᵒ" julia-latexsubs)
+(puthash "\\^p" "ᵖ" julia-latexsubs)
+(puthash "\\^t" "ᵗ" julia-latexsubs)
+(puthash "\\^u" "ᵘ" julia-latexsubs)
+(puthash "\\^v" "ᵛ" julia-latexsubs)
+(puthash "\\^beta" "ᵝ" julia-latexsubs)
+(puthash "\\^gamma" "ᵞ" julia-latexsubs)
+(puthash "\\^delta" "ᵟ" julia-latexsubs)
+(puthash "\\^phi" "ᵠ" julia-latexsubs)
+(puthash "\\^chi" "ᵡ" julia-latexsubs)
+(puthash "\\_i" "ᵢ" julia-latexsubs)
+(puthash "\\_r" "ᵣ" julia-latexsubs)
+(puthash "\\_u" "ᵤ" julia-latexsubs)
+(puthash "\\_v" "ᵥ" julia-latexsubs)
+(puthash "\\_beta" "ᵦ" julia-latexsubs)
+(puthash "\\_gamma" "ᵧ" julia-latexsubs)
+(puthash "\\_rho" "ᵨ" julia-latexsubs)
+(puthash "\\_phi" "ᵩ" julia-latexsubs)
+(puthash "\\_chi" "ᵪ" julia-latexsubs)
+(puthash "\\^c" "ᶜ" julia-latexsubs)
+(puthash "\\^f" "ᶠ" julia-latexsubs)
+(puthash "\\^iota" "ᶥ" julia-latexsubs)
+(puthash "\\^Phi" "ᶲ" julia-latexsubs)
+(puthash "\\^z" "ᶻ" julia-latexsubs)
+(puthash "\\^theta" "ᶿ" julia-latexsubs)
 (puthash "\\enspace" " " julia-latexsubs)
 (puthash "\\quad" " " julia-latexsubs)
 (puthash "\\thickspace" " " julia-latexsubs)
@@ -1008,6 +1016,7 @@ y2 = g(x)"))
 (puthash "\\ddagger" "‡" julia-latexsubs)
 (puthash "\\bullet" "•" julia-latexsubs)
 (puthash "\\dots" "…" julia-latexsubs)
+(puthash "\\ldots" "…" julia-latexsubs)
 (puthash "\\textperthousand" "‰" julia-latexsubs)
 (puthash "\\textpertenthousand" "‱" julia-latexsubs)
 (puthash "\\prime" "′" julia-latexsubs)
@@ -1050,19 +1059,19 @@ y2 = g(x)"))
 (puthash "\\_=" "₌" julia-latexsubs)
 (puthash "\\_(" "₍" julia-latexsubs)
 (puthash "\\_)" "₎" julia-latexsubs)
-(puthash "\\_a" "\u2090" julia-latexsubs)
-(puthash "\\_e" "\u2091" julia-latexsubs)
-(puthash "\\_o" "\u2092" julia-latexsubs)
-(puthash "\\_x" "\u2093" julia-latexsubs)
-(puthash "\\_schwa" "\u2094" julia-latexsubs)
-(puthash "\\_h" "\u2095" julia-latexsubs)
-(puthash "\\_k" "\u2096" julia-latexsubs)
-(puthash "\\_l" "\u2097" julia-latexsubs)
-(puthash "\\_m" "\u2098" julia-latexsubs)
-(puthash "\\_n" "\u2099" julia-latexsubs)
-(puthash "\\_p" "\u209a" julia-latexsubs)
-(puthash "\\_s" "\u209b" julia-latexsubs)
-(puthash "\\_t" "\u209c" julia-latexsubs)
+(puthash "\\_a" "ₐ" julia-latexsubs)
+(puthash "\\_e" "ₑ" julia-latexsubs)
+(puthash "\\_o" "ₒ" julia-latexsubs)
+(puthash "\\_x" "ₓ" julia-latexsubs)
+(puthash "\\_schwa" "ₔ" julia-latexsubs)
+(puthash "\\_h" "ₕ" julia-latexsubs)
+(puthash "\\_k" "ₖ" julia-latexsubs)
+(puthash "\\_l" "ₗ" julia-latexsubs)
+(puthash "\\_m" "ₘ" julia-latexsubs)
+(puthash "\\_n" "ₙ" julia-latexsubs)
+(puthash "\\_p" "ₚ" julia-latexsubs)
+(puthash "\\_s" "ₛ" julia-latexsubs)
+(puthash "\\_t" "ₜ" julia-latexsubs)
 (puthash "\\Elzpes" "₧" julia-latexsubs)
 (puthash "\\euro" "€" julia-latexsubs)
 (puthash "\\leftharpoonaccent" "⃐" julia-latexsubs)
@@ -1080,11 +1089,11 @@ y2 = g(x)"))
 (puthash "\\annuity" "⃧" julia-latexsubs)
 (puthash "\\threeunderdot" "⃨" julia-latexsubs)
 (puthash "\\widebridgeabove" "⃩" julia-latexsubs)
-(puthash "\\underrightharpoondown" "\u20ec" julia-latexsubs)
-(puthash "\\underleftharpoondown" "\u20ed" julia-latexsubs)
-(puthash "\\underleftarrow" "\u20ee" julia-latexsubs)
-(puthash "\\underrightarrow" "\u20ef" julia-latexsubs)
-(puthash "\\asteraccent" "\u20f0" julia-latexsubs)
+(puthash "\\underrightharpoondown" "⃬" julia-latexsubs)
+(puthash "\\underleftharpoondown" "⃭" julia-latexsubs)
+(puthash "\\underleftarrow" "⃮" julia-latexsubs)
+(puthash "\\underrightarrow" "⃯" julia-latexsubs)
+(puthash "\\asteraccent" "⃰" julia-latexsubs)
 (puthash "\\BbbC" "ℂ" julia-latexsubs)
 (puthash "\\Eulerconst" "ℇ" julia-latexsubs)
 (puthash "\\mscrg" "ℊ" julia-latexsubs)
@@ -1115,6 +1124,7 @@ y2 = g(x)"))
 (puthash "\\mscrB" "ℬ" julia-latexsubs)
 (puthash "\\mfrakC" "ℭ" julia-latexsubs)
 (puthash "\\mscre" "ℯ" julia-latexsubs)
+(puthash "\\euler" "ℯ" julia-latexsubs)
 (puthash "\\mscrE" "ℰ" julia-latexsubs)
 (puthash "\\mscrF" "ℱ" julia-latexsubs)
 (puthash "\\Finv" "Ⅎ" julia-latexsubs)
@@ -1124,7 +1134,7 @@ y2 = g(x)"))
 (puthash "\\beth" "ℶ" julia-latexsubs)
 (puthash "\\gimel" "ℷ" julia-latexsubs)
 (puthash "\\daleth" "ℸ" julia-latexsubs)
-(puthash "\\Bbbpi" "\u213c" julia-latexsubs)
+(puthash "\\Bbbpi" "ℼ" julia-latexsubs)
 (puthash "\\Bbbgamma" "ℽ" julia-latexsubs)
 (puthash "\\BbbGamma" "ℾ" julia-latexsubs)
 (puthash "\\BbbPi" "ℿ" julia-latexsubs)
@@ -1142,6 +1152,7 @@ y2 = g(x)"))
 (puthash "\\upand" "⅋" julia-latexsubs)
 (puthash "\\leftarrow" "←" julia-latexsubs)
 (puthash "\\uparrow" "↑" julia-latexsubs)
+(puthash "\\to" "→" julia-latexsubs)
 (puthash "\\rightarrow" "→" julia-latexsubs)
 (puthash "\\downarrow" "↓" julia-latexsubs)
 (puthash "\\leftrightarrow" "↔" julia-latexsubs)
@@ -1152,6 +1163,8 @@ y2 = g(x)"))
 (puthash "\\swarrow" "↙" julia-latexsubs)
 (puthash "\\nleftarrow" "↚" julia-latexsubs)
 (puthash "\\nrightarrow" "↛" julia-latexsubs)
+(puthash "\\leftwavearrow" "↜" julia-latexsubs)
+(puthash "\\rightwavearrow" "↝" julia-latexsubs)
 (puthash "\\twoheadleftarrow" "↞" julia-latexsubs)
 (puthash "\\twoheaduparrow" "↟" julia-latexsubs)
 (puthash "\\twoheadrightarrow" "↠" julia-latexsubs)
@@ -1247,6 +1260,7 @@ y2 = g(x)"))
 (puthash "\\exists" "∃" julia-latexsubs)
 (puthash "\\nexists" "∄" julia-latexsubs)
 (puthash "\\varnothing" "∅" julia-latexsubs)
+(puthash "\\emptyset" "∅" julia-latexsubs)
 (puthash "\\increment" "∆" julia-latexsubs)
 (puthash "\\del" "∇" julia-latexsubs)
 (puthash "\\nabla" "∇" julia-latexsubs)
@@ -1439,6 +1453,7 @@ y2 = g(x)"))
 (puthash "\\hermitconjmatrix" "⊹" julia-latexsubs)
 (puthash "\\intercal" "⊺" julia-latexsubs)
 (puthash "\\veebar" "⊻" julia-latexsubs)
+(puthash "\\xor" "⊻" julia-latexsubs)
 (puthash "\\barwedge" "⊼" julia-latexsubs)
 (puthash "\\barvee" "⊽" julia-latexsubs)
 (puthash "\\rightanglearc" "⊾" julia-latexsubs)
@@ -1509,6 +1524,7 @@ y2 = g(x)"))
 (puthash "\\bagmember" "⋿" julia-latexsubs)
 (puthash "\\diameter" "⌀" julia-latexsubs)
 (puthash "\\house" "⌂" julia-latexsubs)
+(puthash "\\varbarwedge" "⌅" julia-latexsubs)
 (puthash "\\vardoublebarwedge" "⌆" julia-latexsubs)
 (puthash "\\lceil" "⌈" julia-latexsubs)
 (puthash "\\rceil" "⌉" julia-latexsubs)
@@ -1546,12 +1562,14 @@ y2 = g(x)"))
 (puthash "\\lvboxline" "⎸" julia-latexsubs)
 (puthash "\\rvboxline" "⎹" julia-latexsubs)
 (puthash "\\varcarriagereturn" "⏎" julia-latexsubs)
-(puthash "\\trapezium" "\u23e2" julia-latexsubs)
-(puthash "\\benzenr" "\u23e3" julia-latexsubs)
-(puthash "\\strns" "\u23e4" julia-latexsubs)
-(puthash "\\fltns" "\u23e5" julia-latexsubs)
-(puthash "\\accurrent" "\u23e6" julia-latexsubs)
-(puthash "\\elinters" "\u23e7" julia-latexsubs)
+(puthash "\\overbrace" "⏞" julia-latexsubs)
+(puthash "\\underbrace" "⏟" julia-latexsubs)
+(puthash "\\trapezium" "⏢" julia-latexsubs)
+(puthash "\\benzenr" "⏣" julia-latexsubs)
+(puthash "\\strns" "⏤" julia-latexsubs)
+(puthash "\\fltns" "⏥" julia-latexsubs)
+(puthash "\\accurrent" "⏦" julia-latexsubs)
+(puthash "\\elinters" "⏧" julia-latexsubs)
 (puthash "\\blanksymbol" "␢" julia-latexsubs)
 (puthash "\\textvisiblespace" "␣" julia-latexsubs)
 (puthash "\\circledS" "Ⓢ" julia-latexsubs)
@@ -1590,7 +1608,9 @@ y2 = g(x)"))
 (puthash "\\blacktriangle" "▴" julia-latexsubs)
 (puthash "\\vartriangle" "▵" julia-latexsubs)
 (puthash "\\blacktriangleright" "▶" julia-latexsubs)
-(puthash "\\triangleright" "▹" julia-latexsubs)
+(puthash "\\triangleright" "▷" julia-latexsubs)
+(puthash "\\smallblacktriangleright" "▸" julia-latexsubs)
+(puthash "\\smalltriangleright" "▹" julia-latexsubs)
 (puthash "\\blackpointerright" "►" julia-latexsubs)
 (puthash "\\whitepointerright" "▻" julia-latexsubs)
 (puthash "\\bigblacktriangledown" "▼" julia-latexsubs)
@@ -1598,7 +1618,9 @@ y2 = g(x)"))
 (puthash "\\blacktriangledown" "▾" julia-latexsubs)
 (puthash "\\triangledown" "▿" julia-latexsubs)
 (puthash "\\blacktriangleleft" "◀" julia-latexsubs)
-(puthash "\\triangleleft" "◃" julia-latexsubs)
+(puthash "\\triangleleft" "◁" julia-latexsubs)
+(puthash "\\smallblacktriangleleft" "◂" julia-latexsubs)
+(puthash "\\smalltriangleleft" "◃" julia-latexsubs)
 (puthash "\\blackpointerleft" "◄" julia-latexsubs)
 (puthash "\\whitepointerleft" "◅" julia-latexsubs)
 (puthash "\\mdlgblkdiamond" "◆" julia-latexsubs)
@@ -1666,6 +1688,7 @@ y2 = g(x)"))
 (puthash "\\blacksmiley" "☻" julia-latexsubs)
 (puthash "\\sun" "☼" julia-latexsubs)
 (puthash "\\rightmoon" "☽" julia-latexsubs)
+(puthash "\\leftmoon" "☾" julia-latexsubs)
 (puthash "\\mercury" "☿" julia-latexsubs)
 (puthash "\\venus" "♀" julia-latexsubs)
 (puthash "\\female" "♀" julia-latexsubs)
@@ -1702,7 +1725,7 @@ y2 = g(x)"))
 (puthash "\\flat" "♭" julia-latexsubs)
 (puthash "\\natural" "♮" julia-latexsubs)
 (puthash "\\sharp" "♯" julia-latexsubs)
-(puthash "\\acidfree" "\u267e" julia-latexsubs)
+(puthash "\\acidfree" "♾" julia-latexsubs)
 (puthash "\\dicei" "⚀" julia-latexsubs)
 (puthash "\\diceii" "⚁" julia-latexsubs)
 (puthash "\\diceiii" "⚂" julia-latexsubs)
@@ -1713,26 +1736,33 @@ y2 = g(x)"))
 (puthash "\\circledtwodots" "⚇" julia-latexsubs)
 (puthash "\\blackcircledrightdot" "⚈" julia-latexsubs)
 (puthash "\\blackcircledtwodots" "⚉" julia-latexsubs)
-(puthash "\\Hermaphrodite" "\u26a5" julia-latexsubs)
-(puthash "\\mdwhtcircle" "\u26aa" julia-latexsubs)
-(puthash "\\mdblkcircle" "\u26ab" julia-latexsubs)
-(puthash "\\mdsmwhtcircle" "\u26ac" julia-latexsubs)
-(puthash "\\neuter" "\u26b2" julia-latexsubs)
+(puthash "\\Hermaphrodite" "⚥" julia-latexsubs)
+(puthash "\\mdwhtcircle" "⚪" julia-latexsubs)
+(puthash "\\mdblkcircle" "⚫" julia-latexsubs)
+(puthash "\\mdsmwhtcircle" "⚬" julia-latexsubs)
+(puthash "\\neuter" "⚲" julia-latexsubs)
 (puthash "\\checkmark" "✓" julia-latexsubs)
 (puthash "\\maltese" "✠" julia-latexsubs)
 (puthash "\\circledstar" "✪" julia-latexsubs)
 (puthash "\\varstar" "✶" julia-latexsubs)
 (puthash "\\dingasterisk" "✽" julia-latexsubs)
 (puthash "\\draftingarrow" "➛" julia-latexsubs)
-(puthash "\\threedangle" "\u27c0" julia-latexsubs)
-(puthash "\\whiteinwhitetriangle" "\u27c1" julia-latexsubs)
-(puthash "\\perp" "\u27c2" julia-latexsubs)
-(puthash "\\bsolhsub" "\u27c8" julia-latexsubs)
-(puthash "\\suphsol" "\u27c9" julia-latexsubs)
+(puthash "\\threedangle" "⟀" julia-latexsubs)
+(puthash "\\whiteinwhitetriangle" "⟁" julia-latexsubs)
+(puthash "\\perp" "⟂" julia-latexsubs)
+(puthash "\\bsolhsub" "⟈" julia-latexsubs)
+(puthash "\\suphsol" "⟉" julia-latexsubs)
 (puthash "\\wedgedot" "⟑" julia-latexsubs)
 (puthash "\\upin" "⟒" julia-latexsubs)
+(puthash "\\leftouterjoin" "⟕" julia-latexsubs)
+(puthash "\\rightouterjoin" "⟖" julia-latexsubs)
+(puthash "\\fullouterjoin" "⟗" julia-latexsubs)
 (puthash "\\bigbot" "⟘" julia-latexsubs)
 (puthash "\\bigtop" "⟙" julia-latexsubs)
+(puthash "\\llbracket" "⟦" julia-latexsubs)
+(puthash "\\openbracketleft" "⟦" julia-latexsubs)
+(puthash "\\openbracketright" "⟧" julia-latexsubs)
+(puthash "\\rrbracket" "⟧" julia-latexsubs)
 (puthash "\\langle" "⟨" julia-latexsubs)
 (puthash "\\rangle" "⟩" julia-latexsubs)
 (puthash "\\UUparrow" "⟰" julia-latexsubs)
@@ -1740,9 +1770,12 @@ y2 = g(x)"))
 (puthash "\\longleftarrow" "⟵" julia-latexsubs)
 (puthash "\\longrightarrow" "⟶" julia-latexsubs)
 (puthash "\\longleftrightarrow" "⟷" julia-latexsubs)
+(puthash "\\impliedby" "⟸" julia-latexsubs)
 (puthash "\\Longleftarrow" "⟸" julia-latexsubs)
+(puthash "\\implies" "⟹" julia-latexsubs)
 (puthash "\\Longrightarrow" "⟹" julia-latexsubs)
 (puthash "\\Longleftrightarrow" "⟺" julia-latexsubs)
+(puthash "\\iff" "⟺" julia-latexsubs)
 (puthash "\\longmapsfrom" "⟻" julia-latexsubs)
 (puthash "\\longmapsto" "⟼" julia-latexsubs)
 (puthash "\\Longmapsfrom" "⟽" julia-latexsubs)
@@ -1923,6 +1956,7 @@ y2 = g(x)"))
 (puthash "\\intcup" "⨚" julia-latexsubs)
 (puthash "\\upint" "⨛" julia-latexsubs)
 (puthash "\\lowint" "⨜" julia-latexsubs)
+(puthash "\\Join" "⨝" julia-latexsubs)
 (puthash "\\ringplus" "⨢" julia-latexsubs)
 (puthash "\\plushat" "⨣" julia-latexsubs)
 (puthash "\\simplus" "⨤" julia-latexsubs)
@@ -2116,77 +2150,73 @@ y2 = g(x)"))
 (puthash "\\gggnest" "⫸" julia-latexsubs)
 (puthash "\\leqqslant" "⫹" julia-latexsubs)
 (puthash "\\geqqslant" "⫺" julia-latexsubs)
-(puthash "\\squaretopblack" "\u2b12" julia-latexsubs)
-(puthash "\\squarebotblack" "\u2b13" julia-latexsubs)
-(puthash "\\squareurblack" "\u2b14" julia-latexsubs)
-(puthash "\\squarellblack" "\u2b15" julia-latexsubs)
-(puthash "\\diamondleftblack" "\u2b16" julia-latexsubs)
-(puthash "\\diamondrightblack" "\u2b17" julia-latexsubs)
-(puthash "\\diamondtopblack" "\u2b18" julia-latexsubs)
-(puthash "\\diamondbotblack" "\u2b19" julia-latexsubs)
-(puthash "\\dottedsquare" "\u2b1a" julia-latexsubs)
-(puthash "\\lgblksquare" "\u2b1b" julia-latexsubs)
-(puthash "\\lgwhtsquare" "\u2b1c" julia-latexsubs)
-(puthash "\\vysmblksquare" "\u2b1d" julia-latexsubs)
-(puthash "\\vysmwhtsquare" "\u2b1e" julia-latexsubs)
-(puthash "\\pentagonblack" "\u2b1f" julia-latexsubs)
-(puthash "\\pentagon" "\u2b20" julia-latexsubs)
-(puthash "\\varhexagon" "\u2b21" julia-latexsubs)
-(puthash "\\varhexagonblack" "\u2b22" julia-latexsubs)
-(puthash "\\hexagonblack" "\u2b23" julia-latexsubs)
-(puthash "\\lgblkcircle" "\u2b24" julia-latexsubs)
-(puthash "\\mdblkdiamond" "\u2b25" julia-latexsubs)
-(puthash "\\mdwhtdiamond" "\u2b26" julia-latexsubs)
-(puthash "\\mdblklozenge" "\u2b27" julia-latexsubs)
-(puthash "\\mdwhtlozenge" "\u2b28" julia-latexsubs)
-(puthash "\\smblkdiamond" "\u2b29" julia-latexsubs)
-(puthash "\\smblklozenge" "\u2b2a" julia-latexsubs)
-(puthash "\\smwhtlozenge" "\u2b2b" julia-latexsubs)
-(puthash "\\blkhorzoval" "\u2b2c" julia-latexsubs)
-(puthash "\\whthorzoval" "\u2b2d" julia-latexsubs)
-(puthash "\\blkvertoval" "\u2b2e" julia-latexsubs)
-(puthash "\\whtvertoval" "\u2b2f" julia-latexsubs)
-(puthash "\\circleonleftarrow" "\u2b30" julia-latexsubs)
-(puthash "\\leftthreearrows" "\u2b31" julia-latexsubs)
-(puthash "\\leftarrowonoplus" "\u2b32" julia-latexsubs)
-(puthash "\\longleftsquigarrow" "\u2b33" julia-latexsubs)
-(puthash "\\nvtwoheadleftarrow" "\u2b34" julia-latexsubs)
-(puthash "\\nVtwoheadleftarrow" "\u2b35" julia-latexsubs)
-(puthash "\\twoheadmapsfrom" "\u2b36" julia-latexsubs)
-(puthash "\\twoheadleftdbkarrow" "\u2b37" julia-latexsubs)
-(puthash "\\leftdotarrow" "\u2b38" julia-latexsubs)
-(puthash "\\nvleftarrowtail" "\u2b39" julia-latexsubs)
-(puthash "\\nVleftarrowtail" "\u2b3a" julia-latexsubs)
-(puthash "\\twoheadleftarrowtail" "\u2b3b" julia-latexsubs)
-(puthash "\\nvtwoheadleftarrowtail" "\u2b3c" julia-latexsubs)
-(puthash "\\nVtwoheadleftarrowtail" "\u2b3d" julia-latexsubs)
-(puthash "\\leftarrowx" "\u2b3e" julia-latexsubs)
-(puthash "\\leftcurvedarrow" "\u2b3f" julia-latexsubs)
-(puthash "\\equalleftarrow" "\u2b40" julia-latexsubs)
-(puthash "\\bsimilarleftarrow" "\u2b41" julia-latexsubs)
-(puthash "\\leftarrowbackapprox" "\u2b42" julia-latexsubs)
-(puthash "\\rightarrowgtr" "\u2b43" julia-latexsubs)
-(puthash "\\rightarrowsupset" "\u2b44" julia-latexsubs)
-(puthash "\\LLeftarrow" "\u2b45" julia-latexsubs)
-(puthash "\\RRightarrow" "\u2b46" julia-latexsubs)
-(puthash "\\bsimilarrightarrow" "\u2b47" julia-latexsubs)
-(puthash "\\rightarrowbackapprox" "\u2b48" julia-latexsubs)
-(puthash "\\similarleftarrow" "\u2b49" julia-latexsubs)
-(puthash "\\leftarrowapprox" "\u2b4a" julia-latexsubs)
-(puthash "\\leftarrowbsimilar" "\u2b4b" julia-latexsubs)
-(puthash "\\rightarrowbsimilar" "\u2b4c" julia-latexsubs)
-(puthash "\\medwhitestar" "\u2b50" julia-latexsubs)
-(puthash "\\medblackstar" "\u2b51" julia-latexsubs)
-(puthash "\\smwhitestar" "\u2b52" julia-latexsubs)
-(puthash "\\rightpentagonblack" "\u2b53" julia-latexsubs)
-(puthash "\\rightpentagon" "\u2b54" julia-latexsubs)
-(puthash "\\_j" "\u2c7c" julia-latexsubs)
-(puthash "\\^V" "\u2c7d" julia-latexsubs)
+(puthash "\\squaretopblack" "⬒" julia-latexsubs)
+(puthash "\\squarebotblack" "⬓" julia-latexsubs)
+(puthash "\\squareurblack" "⬔" julia-latexsubs)
+(puthash "\\squarellblack" "⬕" julia-latexsubs)
+(puthash "\\diamondleftblack" "⬖" julia-latexsubs)
+(puthash "\\diamondrightblack" "⬗" julia-latexsubs)
+(puthash "\\diamondtopblack" "⬘" julia-latexsubs)
+(puthash "\\diamondbotblack" "⬙" julia-latexsubs)
+(puthash "\\dottedsquare" "⬚" julia-latexsubs)
+(puthash "\\lgblksquare" "⬛" julia-latexsubs)
+(puthash "\\lgwhtsquare" "⬜" julia-latexsubs)
+(puthash "\\vysmblksquare" "⬝" julia-latexsubs)
+(puthash "\\vysmwhtsquare" "⬞" julia-latexsubs)
+(puthash "\\pentagonblack" "⬟" julia-latexsubs)
+(puthash "\\pentagon" "⬠" julia-latexsubs)
+(puthash "\\varhexagon" "⬡" julia-latexsubs)
+(puthash "\\varhexagonblack" "⬢" julia-latexsubs)
+(puthash "\\hexagonblack" "⬣" julia-latexsubs)
+(puthash "\\lgblkcircle" "⬤" julia-latexsubs)
+(puthash "\\mdblkdiamond" "⬥" julia-latexsubs)
+(puthash "\\mdwhtdiamond" "⬦" julia-latexsubs)
+(puthash "\\mdblklozenge" "⬧" julia-latexsubs)
+(puthash "\\mdwhtlozenge" "⬨" julia-latexsubs)
+(puthash "\\smblkdiamond" "⬩" julia-latexsubs)
+(puthash "\\smblklozenge" "⬪" julia-latexsubs)
+(puthash "\\smwhtlozenge" "⬫" julia-latexsubs)
+(puthash "\\blkhorzoval" "⬬" julia-latexsubs)
+(puthash "\\whthorzoval" "⬭" julia-latexsubs)
+(puthash "\\blkvertoval" "⬮" julia-latexsubs)
+(puthash "\\whtvertoval" "⬯" julia-latexsubs)
+(puthash "\\circleonleftarrow" "⬰" julia-latexsubs)
+(puthash "\\leftthreearrows" "⬱" julia-latexsubs)
+(puthash "\\leftarrowonoplus" "⬲" julia-latexsubs)
+(puthash "\\longleftsquigarrow" "⬳" julia-latexsubs)
+(puthash "\\nvtwoheadleftarrow" "⬴" julia-latexsubs)
+(puthash "\\nVtwoheadleftarrow" "⬵" julia-latexsubs)
+(puthash "\\twoheadmapsfrom" "⬶" julia-latexsubs)
+(puthash "\\twoheadleftdbkarrow" "⬷" julia-latexsubs)
+(puthash "\\leftdotarrow" "⬸" julia-latexsubs)
+(puthash "\\nvleftarrowtail" "⬹" julia-latexsubs)
+(puthash "\\nVleftarrowtail" "⬺" julia-latexsubs)
+(puthash "\\twoheadleftarrowtail" "⬻" julia-latexsubs)
+(puthash "\\nvtwoheadleftarrowtail" "⬼" julia-latexsubs)
+(puthash "\\nVtwoheadleftarrowtail" "⬽" julia-latexsubs)
+(puthash "\\leftarrowx" "⬾" julia-latexsubs)
+(puthash "\\leftcurvedarrow" "⬿" julia-latexsubs)
+(puthash "\\equalleftarrow" "⭀" julia-latexsubs)
+(puthash "\\bsimilarleftarrow" "⭁" julia-latexsubs)
+(puthash "\\leftarrowbackapprox" "⭂" julia-latexsubs)
+(puthash "\\rightarrowgtr" "⭃" julia-latexsubs)
+(puthash "\\rightarrowsupset" "⭄" julia-latexsubs)
+(puthash "\\LLeftarrow" "⭅" julia-latexsubs)
+(puthash "\\RRightarrow" "⭆" julia-latexsubs)
+(puthash "\\bsimilarrightarrow" "⭇" julia-latexsubs)
+(puthash "\\rightarrowbackapprox" "⭈" julia-latexsubs)
+(puthash "\\similarleftarrow" "⭉" julia-latexsubs)
+(puthash "\\leftarrowapprox" "⭊" julia-latexsubs)
+(puthash "\\leftarrowbsimilar" "⭋" julia-latexsubs)
+(puthash "\\rightarrowbsimilar" "⭌" julia-latexsubs)
+(puthash "\\medwhitestar" "⭐" julia-latexsubs)
+(puthash "\\medblackstar" "⭑" julia-latexsubs)
+(puthash "\\smwhitestar" "⭒" julia-latexsubs)
+(puthash "\\rightpentagonblack" "⭓" julia-latexsubs)
+(puthash "\\rightpentagon" "⭔" julia-latexsubs)
+(puthash "\\_j" "ⱼ" julia-latexsubs)
+(puthash "\\^V" "ⱽ" julia-latexsubs)
 (puthash "\\postalmark" "〒" julia-latexsubs)
-(puthash "\\openbracketleft" "〚" julia-latexsubs)
-(puthash "\\openbracketright" "〛" julia-latexsubs)
-(puthash "\\overbrace" "︷" julia-latexsubs)
-(puthash "\\underbrace" "︸" julia-latexsubs)
 (puthash "\\mbfA" "𝐀" julia-latexsubs)
 (puthash "\\mbfB" "𝐁" julia-latexsubs)
 (puthash "\\mbfC" "𝐂" julia-latexsubs)
@@ -2369,8 +2399,7 @@ y2 = g(x)"))
 (puthash "\\mscri" "𝒾" julia-latexsubs)
 (puthash "\\mscrj" "𝒿" julia-latexsubs)
 (puthash "\\mscrk" "𝓀" julia-latexsubs)
-(let ((c (decode-char 'ucs #x1d4c1)))
-  (if c (puthash "\\mscrl" (char-to-string c) julia-latexsubs)))
+(puthash "\\mscrl" "𝓁" julia-latexsubs)
 (puthash "\\mscrm" "𝓂" julia-latexsubs)
 (puthash "\\mscrn" "𝓃" julia-latexsubs)
 (puthash "\\mscrp" "𝓅" julia-latexsubs)
@@ -2840,10 +2869,8 @@ y2 = g(x)"))
 (puthash "\\mttx" "𝚡" julia-latexsubs)
 (puthash "\\mtty" "𝚢" julia-latexsubs)
 (puthash "\\mttz" "𝚣" julia-latexsubs)
-(let ((c (decode-char 'ucs #x1d6a4)))
-  (if c (puthash "\\imath" (char-to-string c) julia-latexsubs)))
-(let ((c (decode-char 'ucs #x1d6a5)))
-  (if c (puthash "\\jmath" (char-to-string c) julia-latexsubs)))
+(puthash "\\imath" "𝚤" julia-latexsubs)
+(puthash "\\jmath" "𝚥" julia-latexsubs)
 (puthash "\\mbfAlpha" "𝚨" julia-latexsubs)
 (puthash "\\mbfBeta" "𝚩" julia-latexsubs)
 (puthash "\\mbfGamma" "𝚪" julia-latexsubs)
@@ -3134,10 +3161,8 @@ y2 = g(x)"))
 (puthash "\\mbfitsansvarphi" "𝟇" julia-latexsubs)
 (puthash "\\mbfitsansvarrho" "𝟈" julia-latexsubs)
 (puthash "\\mbfitsansvarpi" "𝟉" julia-latexsubs)
-(let ((c (decode-char 'ucs #x1d7ca)))
-  (if c (puthash "\\mbfDigamma" (char-to-string c) julia-latexsubs)))
-(let ((c (decode-char 'ucs #x1d7cb)))
-  (if c (puthash "\\mbfdigamma" (char-to-string c) julia-latexsubs)))
+(puthash "\\mbfDigamma" "𝟊" julia-latexsubs)
+(puthash "\\mbfdigamma" "𝟋" julia-latexsubs)
 (puthash "\\mbfzero" "𝟎" julia-latexsubs)
 (puthash "\\mbfone" "𝟏" julia-latexsubs)
 (puthash "\\mbftwo" "𝟐" julia-latexsubs)
@@ -3189,6 +3214,28 @@ y2 = g(x)"))
 (puthash "\\mtteight" "𝟾" julia-latexsubs)
 (puthash "\\mttnine" "𝟿" julia-latexsubs)
 
+;; Math insertion in julia. Use it with
+;; (add-hook 'julia-mode-hook 'julia-math-mode)
+;; (add-hook 'inferior-julia-mode-hook 'julia-math-mode)
+
+(when (require 'latex nil t)
+  (defun julia-math-insert (s)
+    "Inserts math symbol given by `s'"
+    (when s
+      (let ((sym (gethash (concat "\\" s) julia-latexsubs)))
+        (when sym
+          (insert sym)))))
+
+  (define-minor-mode julia-math-mode
+    "A minor mode with easy access to TeX math commands. The
+command is only entered if it is supported in Julia. The
+following commands are defined:
+
+\\{LaTeX-math-mode-map}"
+    nil nil (list (cons (LaTeX-math-abbrev-prefix) LaTeX-math-keymap))
+    (if julia-math-mode
+        (set (make-local-variable 'LaTeX-math-insert-function) 'julia-math-insert))))
+
 ;; Code for `inferior-julia-mode'
 (require 'comint)
 
@@ -3197,12 +3244,12 @@ y2 = g(x)"))
   :type 'string
   :group 'julia)
 
-(defcustom julia-arguments '()
+(defcustom julia-arguments '("-i" "--color=yes")
   "Commandline arguments to pass to `julia-program'."
-  :type 'string
+  :type '(repeat (string :tag "argument"))
   :group 'julia)
 
-(defvar julia-prompt-regexp "julia>"
+(defvar julia-prompt-regexp "^\\w*> "
   "Regexp for matching `inferior-julia' prompt.")
 
 (defvar inferior-julia-mode-map
@@ -3219,7 +3266,8 @@ y2 = g(x)"))
     (let ((julia-program julia-program)
           (buffer (get-buffer-create "*Julia*")))
       (when (not (comint-check-proc "*Julia*"))
-            (apply #'make-comint-in-buffer "Julia" "*Julia*" julia-program julia-arguments))
+        (apply #'make-comint-in-buffer "Julia" "*Julia*"
+               julia-program nil julia-arguments))
       (pop-to-buffer-same-window "*Julia*")
       (inferior-julia-mode)))
 
@@ -3239,6 +3287,10 @@ y2 = g(x)"))
   (set (make-local-variable 'indent-line-function) 'julia-indent-line))
 
 (add-hook 'inferior-julia-mode-hook 'inferior-julia--initialize)
+
+;;;###autoload
+(defalias 'run-julia #'inferior-julia
+  "Run an inferior instance of `julia' inside Emacs.")
 
 (provide 'julia-mode)
 
